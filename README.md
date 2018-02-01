@@ -1,6 +1,6 @@
 # Gerrymandering
 
-A python program that explores a 5x5 redistring scheme with respect to geography.
+A python program that explores 5 by 5 redistricting schemes with respect to geography.
 
 Consider the following set of 25 voters:
 
