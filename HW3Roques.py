@@ -175,8 +175,5 @@ def find_start_positions(grid):
                 break
     return start_positions
 
-def binarize_grid(grid, num):
-    return [[1 if x == num else 0 for x in row] for row in grid]
-
 if __name__ == '__main__':
     main()
