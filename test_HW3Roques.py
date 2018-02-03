@@ -1,5 +1,6 @@
 import unittest
-from HW3Roques import *
+from HW3Roques import find_start_positions
+from HW3Roques import is_grid_contiguous
 
 class HW3Roques(unittest.TestCase):
 
@@ -15,10 +16,22 @@ class HW3Roques(unittest.TestCase):
                            [3, 2, 3, 3, 5],
                            [3, 3, 3, 5, 5]]
 
+    def test_find_start_positions(self):
+        expected_start_positions = {
+            1: (0, 0),
+            2: (0, 1),
+            3: (3, 0),
+            4: (0, 2),
+            5: (1, 3)
+        }
+
+        start_positions = find_start_positions(self.contiguous_grid)
+
+        self.assertEqual(start_positions, expected_start_positions)
+
     def test_is_grid_contiguous(self):
         self.assertTrue(is_grid_contiguous(self.contiguous_grid))
         self.assertFalse(is_grid_contiguous(self.non_contiguous_grid))
-
 
 if __name__ == '__main__':
     unittest.main()
