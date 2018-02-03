@@ -1,4 +1,5 @@
 import unittest
+from HW3Roques import is_district_contiguous
 from HW3Roques import find_start_positions
 from HW3Roques import is_grid_contiguous
 
@@ -15,6 +16,10 @@ class HW3Roques(unittest.TestCase):
                            [2, 2, 1, 5, 4],
                            [3, 2, 3, 3, 5],
                            [3, 3, 3, 5, 5]]
+
+    def test_is_district_contiguous(self):
+        self.assertTrue(is_district_contiguous(self.contiguous_grid, (0, 0)))
+        self.assertFalse(is_district_contiguous(self.non_contiguous_grid, (0, 0)))
 
     def test_find_start_positions(self):
         expected_start_positions = {
