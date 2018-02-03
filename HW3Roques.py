@@ -29,7 +29,7 @@ from itertools import product
 OUTPUT_FILE = "HW3output.txt"
 
 # Total number of redistricting schemes
-NUM_REDISTRICTING_SCHEMES = 1000  # 1 million
+NUM_REDISTRICTING_SCHEMES = 1000  # 10 million
 
 # Total number of voters
 NUM_VOTERS = 25
@@ -41,7 +41,7 @@ NUM_DISTRICTS = 5
 NUM_VOTERS_IN_DISTRICT = 5
 
 # Map dimension
-MAP_DIM = 5
+GRID_DIM = 5
 
 # Total number of green voters
 MAX_GREEN_VOTERS = 15
@@ -57,43 +57,59 @@ def main():
     text_file = open(OUTPUT_FILE, "w")
 
     # Initialize map of zeros
-    district_map = [[0] * MAP_DIM for _ in range(MAP_DIM)]
+    district_grid = [[0] * GRID_DIM for _ in range(GRID_DIM)]
 
-    # Get a random list of coordinates
-    coords = list(product(range(MAP_DIM), repeat=2))
-    shuffle(coords)
+    # Start with a list of contiguous coordinates,
+    # so that there's at least 1 contiguous redistricting scheme
+    coords = get_contiguous_coords()
 
-    # Get random redistricting
+    contiguous_coords = []
+
+    num_contiguous = 0
+
+    for _ in range(NUM_REDISTRICTING_SCHEMES):
+        # Get a random redistricting
+        make_district_grid(district_grid, coords)
+
+        if is_grid_contiguous(district_grid):
+            num_contiguous += 1
+            contiguous_coords.append(coords[:])
+
+        shuffle(coords)
+
+    print(str(num_contiguous) + " contiguous redistricting scheme\n")
+
+    for contiguous_coord in contiguous_coords:
+        grid = from_coords_to_grid(contiguous_coord)
+        for row in grid:
+            print(row)
+        print("")
+
+    text_file.close()
+
+def make_district_grid(district_grid, coords):
+    """Mutate the redistricting scheme with a list of coordinates."""
+
     district = 1
     for i in range(1, len(coords) + 1):
         X = coords[i-1][0]
         Y = coords[i-1][1]
-        district_map[X][Y] = district
+        district_grid[X][Y] = district
         if i % 5 == 0:
             district += 1
 
-    contiguous_grid = get_contiguous_grid()
-    print("CONTIGUOUS GRID")
-    for row in contiguous_grid:
-        print(row)
+def from_coords_to_grid(coords):
+    """Convert a list of coordinates into a grid."""
 
-    if is_grid_contiguous(contiguous_grid):
-        print("Grid is contiguous\n\n")
-    else:
-        print("Grid is not contiguous\n\n")
-
-    non_contiguous_grid = get_non_contiguous_grid()
-    print("NON CONTIGUOUS GRID")
-    for row in non_contiguous_grid:
-        print(row)
-
-    if is_grid_contiguous(non_contiguous_grid):
-        print("Grid is contiguous")
-    else:
-        print("Grid is not contiguous")
-
-
-    text_file.close()
+    grid = [[0] * GRID_DIM for _ in range(GRID_DIM)]
+    district = 1
+    for i in range(1, len(coords) + 1):
+        X = coords[i-1][0]
+        Y = coords[i-1][1]
+        grid[X][Y] = district
+        if i % 5 == 0:
+            district += 1
+    return grid
 
 def get_voter_map():
     """Get a 5x5 map representing the location of the voters.
@@ -108,25 +124,18 @@ def get_voter_map():
             [G, G, G, P, P],
             [P, G, P, G, P]]
 
-def get_contiguous_grid():
-    """Get a contiguous grid representing a redistricting scheme."""
+def get_contiguous_coords():
+    """Get a list of coordinates to construct a contiguous redistricting scheme."""
 
-    return [[1, 2, 4, 4, 4],
-            [2, 1, 1, 5, 4],
-            [2, 2, 1, 5, 4],
-            [3, 2, 1, 3, 5],
-            [3, 3, 3, 5, 5]]
-
-def get_non_contiguous_grid():
-    """Get a non-contiguous redistricting scheme."""
-
-    return [[1, 2, 4, 4, 4],
-            [2, 1, 1, 5, 4],
-            [2, 2, 1, 5, 4],
-            [3, 2, 3, 3, 5],
-            [3, 3, 3, 5, 5]]
+    return [(0, 0), (1, 1), (1, 2), (2, 2), (3, 2),
+            (0, 1), (1, 0), (2, 0), (2, 1), (3, 1),
+            (3, 0), (4, 0), (4, 1), (4, 2), (3, 3),
+            (0, 2), (0, 3), (0, 4), (1, 4), (2, 4),
+            (1, 3), (2, 3), (3, 4), (4, 4), (4, 3)]
 
 def is_grid_contiguous(grid):
+    """Check whether the grid is contiguous."""
+
     start_positions = find_start_positions(grid)
     for start_pos in start_positions.values():
         if not is_district_contiguous(grid, start_pos):
@@ -135,16 +144,19 @@ def is_grid_contiguous(grid):
 
 
 def is_district_contiguous(grid, start_pos):
+    """Check whether the district is contiguous."""
+
     prev_positions = set()
     prev_positions.add(start_pos)
     return is_district_contiguous_helper(grid, start_pos, prev_positions, 1)
 
 def is_district_contiguous_helper(grid, curr_pos, prev_positions, count):
-    """Find whetere the district is contiguous.
+    """Find whether the district is contiguous.
 
     Source: https://github.com/a1ip/checkio-1/blob/master/the%20Moore%20neighborhood.py
     Source: http://www.imageprocessingplace.com/downloads_V3/root_downloads/tutorials/contour_tracing_Abeer_George_Ghuneim/moore.html
     """
+
     if count == 5:
         return True
     shifts = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
@@ -153,7 +165,7 @@ def is_district_contiguous_helper(grid, curr_pos, prev_positions, count):
     for shift in shifts:
         n_row = curr_pos[0] + shift[0]
         n_col = curr_pos[1] + shift[1]
-        if (n_row >= 0 and n_row < len(grid)) and (n_col >= 0 and n_col < len(grid[0])):  ## Bounds checking
+        if is_in_bounds(grid, n_row, n_col):
             new_value = grid[n_row][n_col]
             new_curr_pos = (n_row, n_col)
             if value == new_value and new_curr_pos not in prev_positions:
@@ -162,7 +174,16 @@ def is_district_contiguous_helper(grid, curr_pos, prev_positions, count):
     if found_neighbor == 0:
         return False
 
+def is_in_bounds(grid, x, y):
+    return (x >= 0 and x < len(grid)) and (y >= 0 and y < len(grid[0]))
+
 def find_start_positions(grid):
+    """Find the first position of each district within the grid.
+
+    :return: A dictionary where the keys are districts,
+             and the values are tuples representing an (x, y) coordinate.
+    """
+
     districts = range(1, NUM_DISTRICTS + 1)
     start_positions = dict.fromkeys(districts)
     for i in range(len(grid)):
