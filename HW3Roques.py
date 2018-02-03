@@ -158,7 +158,6 @@ def is_district_contiguous_helper(grid, curr_pos, prev_positions, count):
             new_curr_pos = (n_row, n_col)
             if value == new_value and new_curr_pos not in prev_positions:
                 prev_positions.add(new_curr_pos)
-                print("Found neigbor: (" + str(n_row) + ", " + str(n_col) + ") Count = " + str(count))
                 return is_district_contiguous_helper(grid, new_curr_pos, prev_positions, count + 1)
     if found_neighbor == 0:
         return False
