@@ -22,6 +22,7 @@ Description:
   Statistics are output to the terminal and a file named "HW3output.txt".
 '''
 
+import sys
 from random import shuffle
 from itertools import product
 
@@ -29,7 +30,7 @@ from itertools import product
 OUTPUT_FILE = "HW3output.txt"
 
 # Total number of redistricting schemes
-NUM_REDISTRICTING_SCHEMES = 1000  # 1 million
+NUM_REDISTRICTING_SCHEMES = 100000000  # 100 million
 
 # Total number of districts
 NUM_DISTRICTS = 5
@@ -57,7 +58,7 @@ def main():
     # Keep track of how many contiguous redistricting schemes are generated
     num_contiguous = 0
 
-    for _ in range(NUM_REDISTRICTING_SCHEMES):
+    for i in range(NUM_REDISTRICTING_SCHEMES):
         # Get a random redistricting
         make_district_grid(district_grid, coords)
 
@@ -66,6 +67,12 @@ def main():
             contiguous_coords.append(coords[:])
 
         shuffle(coords)
+
+        if i % 2000000 == 0:  # Print 50 dots before finishing
+            print('.', end ='')
+            sys.stdout.flush()
+
+    print('\n')
 
     message = "We generated " + str(num_contiguous) + " contiguous random redistricting schemes.\n"
     print_to_screen_and_file(message, text_file)
