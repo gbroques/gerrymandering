@@ -95,7 +95,7 @@ def make_district_grid(district_grid, coords):
         X = coords[i-1][0]
         Y = coords[i-1][1]
         district_grid[X][Y] = district
-        if i % 5 == 0:
+        if i % NUM_DISTRICTS == 0:
             district += 1
 
 def from_coords_to_grid(coords):
@@ -107,7 +107,7 @@ def from_coords_to_grid(coords):
         X = coords[i-1][0]
         Y = coords[i-1][1]
         grid[X][Y] = district
-        if i % 5 == 0:
+        if i % NUM_DISTRICTS == 0:
             district += 1
     return grid
 
@@ -157,22 +157,23 @@ def is_district_contiguous_helper(grid, curr_pos, prev_positions, count):
     Source: http://www.imageprocessingplace.com/downloads_V3/root_downloads/tutorials/contour_tracing_Abeer_George_Ghuneim/moore.html
     """
 
-    if count == 5:
+    if count == NUM_DISTRICTS:
         return True
-    shifts = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
+
+    shifts = ((-1, -1), (-1,  0), (-1, 1), (0, -1),
+              ( 0,  1), ( 1, -1), ( 1, 0), (1,  1))
+
     value = grid[curr_pos[0]][curr_pos[1]]
-    found_neighbor = 0
+
     for shift in shifts:
-        n_row = curr_pos[0] + shift[0]
-        n_col = curr_pos[1] + shift[1]
-        if is_in_bounds(grid, n_row, n_col):
-            new_value = grid[n_row][n_col]
-            new_curr_pos = (n_row, n_col)
-            if value == new_value and new_curr_pos not in prev_positions:
-                prev_positions.add(new_curr_pos)
-                return is_district_contiguous_helper(grid, new_curr_pos, prev_positions, count + 1)
-    if found_neighbor == 0:
-        return False
+        shifted_X = curr_pos[0] + shift[0]
+        shifted_Y = curr_pos[1] + shift[1]
+        if is_in_bounds(grid, shifted_X, shifted_Y):
+            neighbor_value = grid[shifted_X][shifted_Y]
+            next_pos = (shifted_X, shifted_Y)
+            if value == neighbor_value and next_pos not in prev_positions:
+                prev_positions.add(next_pos)
+                return is_district_contiguous_helper(grid, next_pos, prev_positions, count + 1)
 
 def is_in_bounds(grid, x, y):
     return (x >= 0 and x < len(grid)) and (y >= 0 and y < len(grid[0]))
