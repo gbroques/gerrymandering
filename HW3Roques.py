@@ -95,6 +95,8 @@ def main():
 
     print_statistics(text_file, num_wins, winning_ratios, num_contiguous)
 
+    print("Statistics report generated. See file '" + OUTPUT_FILE + "'.")
+
     text_file.close()
 
 def get_percent_elections_won(num_wins, party, num_contiguous):
