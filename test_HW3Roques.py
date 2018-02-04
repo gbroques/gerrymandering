@@ -1,4 +1,6 @@
 import unittest
+from HW3Roques import get_district_winners
+from HW3Roques import get_contiguous_coords
 from HW3Roques import is_district_contiguous
 from HW3Roques import find_start_positions
 from HW3Roques import is_grid_contiguous
@@ -16,6 +18,19 @@ class HW3Roques(unittest.TestCase):
                            [2, 2, 1, 5, 4],
                            [3, 2, 3, 3, 5],
                            [3, 3, 3, 5, 5]]
+
+    def test_get_district_winners(self):
+        expected_district_winners = {
+            1: 'Purple',
+            2: 'Green',
+            3: 'Purple',
+            4: 'Green',
+            5: 'Purple'
+        }
+        coords = get_contiguous_coords()
+        district_winners = get_district_winners(coords)
+        self.assertEqual(expected_district_winners, district_winners)
+
 
     def test_is_district_contiguous(self):
         self.assertTrue(is_district_contiguous(self.contiguous_grid, (0, 0)))

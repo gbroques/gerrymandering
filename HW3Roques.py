@@ -84,6 +84,25 @@ def main():
         for row in grid:
             print(row)
         print("")
+        # Print statistics
+
+        # Keep track of how many times each party wins an election
+        num_wins = {
+            G: 0,
+            P: 0
+        }
+
+        # Keep track which ration wins each election
+        # "Number of districts green wins":"Number of districts purple wins"
+        winning_ratios = {
+          "2:3": 0,
+          "3:2": 0,
+          "4:1": 0,
+          "5:0": 0
+        }
+
+        district_winners = get_district_winners(contiguous_coord)
+        print(district_winners)
 
     text_file.close()
 
@@ -195,6 +214,28 @@ def find_start_positions(grid):
             if None not in start_positions.values():
                 break
     return start_positions
+
+def get_district_winners(coords):
+    districts = range(1, NUM_DISTRICTS + 1)
+    district_winners = dict.fromkeys(districts)
+    voter_map = get_voter_map()
+
+    for i in range(NUM_DISTRICTS):
+        district_coords = coords[5*i:5*(i+1)]
+        num_green_votes = 0
+        num_purple_votes = 0
+        for coord in district_coords:
+            if voter_map[coord[0]][coord[1]] == G:
+                num_green_votes += 1
+            else:
+                num_purple_votes += 1
+        if num_green_votes > num_purple_votes:
+            district_winners[i+1] = G
+        else:
+            district_winners[i+1] = P
+
+    return district_winners
+
 
 if __name__ == '__main__':
     main()
