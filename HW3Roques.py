@@ -29,7 +29,7 @@ from itertools import product
 OUTPUT_FILE = "HW3output.txt"
 
 # Total number of redistricting schemes
-NUM_REDISTRICTING_SCHEMES = 1000000  # 1 million
+NUM_REDISTRICTING_SCHEMES = 1000  # 1 million
 
 # Total number of districts
 NUM_DISTRICTS = 5
@@ -67,8 +67,9 @@ def main():
 
         shuffle(coords)
 
-    print("We generated " + str(num_contiguous) + " contiguous random redistricting schemes.\n")
-    
+    message = "We generated " + str(num_contiguous) + " contiguous random redistricting schemes.\n"
+    print_to_screen_and_file(message, text_file)
+
     # Keep track of how many times each party wins an election.
     num_wins = {
         G: 0,
@@ -95,7 +96,7 @@ def main():
 
     print_statistics(text_file, num_wins, winning_ratios, num_contiguous)
 
-    print("Statistics report generated. See file '" + OUTPUT_FILE + "'.")
+    print("\nStatistics report generated. See file '" + OUTPUT_FILE + "'.")
 
     text_file.close()
 
