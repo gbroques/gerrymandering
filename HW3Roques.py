@@ -19,6 +19,9 @@ Description:
   In each election, there is one green candidate, and one purple candidate in each district.
   Green voters always for the green candidate, and the purple voter always vote for the purple candidate.
   Statistics are output to the terminal and a file named "HW3output.txt".
+
+  To get 30 contiguous random redistrictings it might take around 1 billion iterations,
+  and 16 hours depending upon your machine.
 """
 
 import sys
@@ -67,9 +70,7 @@ def main():
 
         shuffle(coordinates)
 
-        if i % 2000000 == 0:  # Print 50 dots before finishing
-            print('.', end='')
-            sys.stdout.flush()
+        print_loading_dots(i)
 
     print('\n')
 
@@ -103,6 +104,20 @@ def main():
     print("\nStatistics report generated. See file '" + OUTPUT_FILE + "'.")
 
     text_file.close()
+
+
+def print_loading_dots(i):
+    """Print dots to indicate loading to the user.
+
+    Prints one dot every 2 million iterations.
+    Prints 50 dots for 100 million iterations.
+
+    :param i: Number of iterations.
+    :return: void
+    """
+    if i % 2000000 == 0:
+        print('.', end='')
+        sys.stdout.flush()
 
 
 def get_percent_elections_won(num_wins, party, num_contiguous):
