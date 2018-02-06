@@ -12,6 +12,7 @@ Sources:
   * https://py.checkio.org/mission/count-neighbours/
   * https://github.com/a1ip/checkio-1/blob/master/the%20Moore%20neighborhood.py
   * http://www.imageprocessingplace.com/downloads_V3/root_downloads/tutorials/contour_tracing_Abeer_George_Ghuneim/moore.html
+  * https://stackoverflow.com/questions/26988204/using-2d-array-to-create-clickable-tkinter-canvas
 
 Description:
   A python program to explore redistricting schemes with a set of 25 voters.
@@ -93,11 +94,16 @@ def main():
     }
 
     for contiguous_coordinate in contiguous_coordinates:
+        grid = from_coordinates_to_grid(contiguous_coordinate)
+        print_district_map(text_file, grid)
+
         district_winners = get_district_winners(contiguous_coordinate)
         election_winner = get_election_winner(district_winners)
         winning_ratio = get_winning_ratio(district_winners)
         winning_ratios[winning_ratio] += 1
         num_wins[election_winner] += 1
+
+    print_legend(text_file)
 
     print_statistics(text_file, num_wins, winning_ratios, num_contiguous)
 
@@ -147,9 +153,10 @@ def print_statistics(text_file, num_wins, winning_ratios, num_contiguous):
 
 def print_statistics_report_header(text_file):
     """Print the header to the statistics report."""
-
-    print_to_screen_and_file("STATISTICS REPORT", text_file)
-    print_to_screen_and_file("-----------------", text_file)
+    report_title = 'STATISTICS REPORT'
+    print_to_screen_and_file(report_title, text_file)
+    border = get_border('-', len(report_title))
+    print_to_screen_and_file(border, text_file)
 
 
 def print_percent_won(text_file, party, percentage_won):
@@ -172,11 +179,11 @@ def print_winning_ratios(text_file, winning_ratios, num_contiguous):
     print_to_screen_and_file("", text_file)  # Print extra newline character
 
 
-def print_to_screen_and_file(message, file):
+def print_to_screen_and_file(message, file, end='\n'):
     """Prints a message to the screen and a file."""
 
-    print(message)
-    file.write(message + "\n")
+    print(message, end=end)
+    file.write(message + ('\n' if end == '\n' else ''))
 
 
 def make_district_grid(district_grid, coordinates):
@@ -283,6 +290,9 @@ def is_in_bounds(grid, x, y):
 def find_start_positions(grid):
     """Find the first position of each district within the grid.
 
+    TODO: Refactor to get start positions from the list of coordinates,
+          rather than grid to improve performance.
+
     :return: A dictionary where the keys are districts,
              and the values are tuples representing an (x, y) coordinate.
     """
@@ -364,6 +374,34 @@ def get_winning_ratio(district_winners):
         else:
             num_purple_votes += 1
     return str(num_green_votes) + ':' + str(num_purple_votes)
+
+
+def print_district_map(text_file, district_map):
+    voter_map = get_voter_map()
+    border_length = 20
+    border = get_border('═', border_length)
+    print_to_screen_and_file('╔' + border + '╗', text_file)
+    for i in range(len(district_map)):
+        print_to_screen_and_file('║', text_file, end='')
+        for j in range(len(district_map[i])):
+            party = voter_map[i][j]
+            display_str = str(district_map[i][j]) + party[0]
+            print_to_screen_and_file(' ' + display_str + ' ', text_file, end='')
+        print_to_screen_and_file('║', text_file)
+    print_to_screen_and_file('╚' + border + '╝\n', text_file)
+
+
+def get_border(char, length):
+    border = ''
+    for i in range(length):
+        border += char
+    return border
+
+
+def print_legend(text_file):
+    print_to_screen_and_file('LEGEND', text_file)
+    print_to_screen_and_file('  G - Green', text_file)
+    print_to_screen_and_file('  P - Purple\n', text_file)
 
 
 if __name__ == '__main__':
