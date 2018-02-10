@@ -26,30 +26,26 @@ Description:
 """
 
 import sys
+from itertools import product
 from random import shuffle
+
+from constants import *
+from coordinates import from_coordinates_to_grid
+from coordinates import get_district_winners
+from district_winners import *
+from gui import App
+from statistics import print_statistics
+from util import *
 
 # Name of output file
 OUTPUT_FILE = "HW3output.txt"
-
-# Total number of redistricting schemes
-NUM_REDISTRICTING_SCHEMES = 100000000  # 100 million
-
-# Total number of districts
-NUM_DISTRICTS = 5
-
-# Map dimension
-GRID_DIM = 5
-
-# Characters representing each party
-P = 'Purple'
-G = 'Green'
 
 
 def main():
     text_file = open(OUTPUT_FILE, "w")
 
     # Initialize map of zeros
-    district_grid = [[0] * GRID_DIM for _ in range(GRID_DIM)]
+    district_grid = [[0] * NUM_DISTRICTS for _ in range(NUM_DISTRICTS)]
 
     # Start with a list of contiguous coordinates,
     # so that there's at least 1 contiguous redistricting scheme
@@ -60,6 +56,9 @@ def main():
 
     # Keep track of how many contiguous redistricting schemes are generated
     num_contiguous = 0
+
+    contiguous_coordinates.append(get_second_contiguous_coordinates())
+    num_contiguous += 1
 
     for i in range(NUM_REDISTRICTING_SCHEMES):
         # Get a random redistricting
@@ -75,7 +74,7 @@ def main():
 
     print('\n')
 
-    message = "We generated " + str(num_contiguous) + " contiguous random redistricting schemes.\n"
+    message = 'We generated ' + str(num_contiguous) + ' contiguous random redistricting schemes.\n'
     print_to_screen_and_file(message, text_file)
 
     # Keep track of how many times each party wins an election.
@@ -111,6 +110,9 @@ def main():
 
     text_file.close()
 
+    app = App(contiguous_coordinates)
+    app.run_mainloop()
+
 
 def print_loading_dots(i):
     """Print dots to indicate loading to the user.
@@ -126,66 +128,6 @@ def print_loading_dots(i):
         sys.stdout.flush()
 
 
-def get_percent_elections_won(num_wins, party, num_contiguous):
-    """Get the percentage of elections won by a party
-
-    :param num_wins: A dictionary containing parties as keys and election wins as values.
-    :param party: The party.
-    :param num_contiguous: The number of contiguous redistrictings.
-    :return: The percent of total elections won.
-    """
-
-    num_elections_won = num_wins[party]
-    return num_elections_won / num_contiguous * 100
-
-
-def print_statistics(text_file, num_wins, winning_ratios, num_contiguous):
-    """Prints statistics of interest."""
-
-    print_statistics_report_header(text_file)
-
-    print_winning_ratios(text_file, winning_ratios, num_contiguous)
-
-    for party in num_wins.keys():
-        percent_won = get_percent_elections_won(num_wins, party, num_contiguous)
-        print_percent_won(text_file, party, percent_won)
-
-
-def print_statistics_report_header(text_file):
-    """Print the header to the statistics report."""
-    report_title = 'STATISTICS REPORT'
-    print_to_screen_and_file(report_title, text_file)
-    border = get_border('-', len(report_title))
-    print_to_screen_and_file(border, text_file)
-
-
-def print_percent_won(text_file, party, percentage_won):
-    """Print the percentage of elections the party won."""
-
-    message = party + " won " + str(round(percentage_won, 2)) + "% percent of elections."
-    print_to_screen_and_file(message, text_file)
-
-
-def print_winning_ratios(text_file, winning_ratios, num_contiguous):
-    for key in winning_ratios.keys():
-        ratio = key.split(':')
-        num_green_wins = ratio[0]
-        num_purple_wins = ratio[1]
-        message = "Green won " + num_green_wins + " districts "
-        message += "and Purple won " + num_purple_wins + " districts "
-        percent = winning_ratios[key] / num_contiguous * 100
-        message += str(round(percent, 2)) + "% of the time."
-        print_to_screen_and_file(message, text_file)
-    print_to_screen_and_file("", text_file)  # Print extra newline character
-
-
-def print_to_screen_and_file(message, file, end='\n'):
-    """Prints a message to the screen and a file."""
-
-    print(message, end=end)
-    file.write(message + ('\n' if end == '\n' else ''))
-
-
 def make_district_grid(district_grid, coordinates):
     """Mutate the redistricting scheme with a list of coordinates."""
 
@@ -198,42 +140,30 @@ def make_district_grid(district_grid, coordinates):
             district += 1
 
 
-def from_coordinates_to_grid(coordinates):
-    """Convert a list of coordinates into a grid."""
-
-    grid = [[0] * GRID_DIM for _ in range(GRID_DIM)]
-    district = 1
-    for i in range(1, len(coordinates) + 1):
-        x = coordinates[i - 1][0]
-        y = coordinates[i - 1][1]
-        grid[x][y] = district
-        if i % NUM_DISTRICTS == 0:
-            district += 1
-    return grid
-
-
-def get_voter_map():
-    """Get a 5x5 map representing the location of the voters.
-
-    P - Purple
-    G - Green
-    """
-
-    return [[P, G, G, G, G],
-            [G, P, P, P, G],
-            [G, P, G, G, G],
-            [G, G, G, P, P],
-            [P, G, P, G, P]]
-
-
 def get_contiguous_coordinates():
-    """Get a list of coordinates to construct a contiguous redistricting scheme."""
+    """Get a list of coordinates to construct a contiguous redistricting scheme.
+
+    First five elements comprise district 1,
+    next five elements comprise district 2,
+    and so on.
+    """
 
     return [(0, 0), (1, 1), (1, 2), (2, 2), (3, 2),
             (0, 1), (1, 0), (2, 0), (2, 1), (3, 1),
             (3, 0), (4, 0), (4, 1), (4, 2), (3, 3),
             (0, 2), (0, 3), (0, 4), (1, 4), (2, 4),
             (1, 3), (2, 3), (3, 4), (4, 4), (4, 3)]
+
+
+def get_second_contiguous_coordinates():
+    """Get a list of coordinates to construct a contiguous redistricting scheme.
+
+    First five elements comprise district 1,
+    next five elements comprise district 2,
+    and so on.
+    """
+
+    return list(product(range(NUM_DISTRICTS), repeat=2))
 
 
 def is_grid_contiguous(grid):
@@ -309,73 +239,6 @@ def find_start_positions(grid):
     return start_positions
 
 
-def get_district_winners(coordinates):
-    """Get which party won each district from a list of coordinates.
-    
-    :param coordinates: A list of coordinates.
-    :return: A dictionary where keys are districts,
-             and values are parties.
-    """
-
-    districts = range(1, NUM_DISTRICTS + 1)
-    district_winners = dict.fromkeys(districts)
-    voter_map = get_voter_map()
-
-    for i in range(NUM_DISTRICTS):
-        district_coordinates = coordinates[NUM_DISTRICTS * i:NUM_DISTRICTS * (i + 1)]
-        num_green_votes = 0
-        num_purple_votes = 0
-        for coord in district_coordinates:
-            if voter_map[coord[0]][coord[1]] == G:
-                num_green_votes += 1
-            else:
-                num_purple_votes += 1
-        if num_green_votes > num_purple_votes:
-            district_winners[i + 1] = G
-        else:
-            district_winners[i + 1] = P
-
-    return district_winners
-
-
-def get_election_winner(district_winners):
-    """Get which party won the election."""
-
-    num_green_votes = 0
-    num_purple_votes = 0
-    for winner in district_winners.values():
-        if winner == G:
-            num_green_votes += 1
-        else:
-            num_purple_votes += 1
-    if num_green_votes > num_purple_votes:
-        return G
-    else:
-        return P
-
-
-def get_winning_ratio(district_winners):
-    """Get the ratio that won the election.
-
-    The ratio that won the election,
-    is the number of districts green won,
-    versus the number of districts purple won.
-
-    :return: A string with the number of districts green won,
-             and the number of districts purple won,
-             concatenated by a colon ':' character.
-    """
-
-    num_green_votes = 0
-    num_purple_votes = 0
-    for winner in district_winners.values():
-        if winner == G:
-            num_green_votes += 1
-        else:
-            num_purple_votes += 1
-    return str(num_green_votes) + ':' + str(num_purple_votes)
-
-
 def print_district_map(text_file, district_map):
     voter_map = get_voter_map()
     border_length = 20
@@ -389,13 +252,6 @@ def print_district_map(text_file, district_map):
             print_to_screen_and_file(' ' + display_str + ' ', text_file, end='')
         print_to_screen_and_file('║', text_file)
     print_to_screen_and_file('╚' + border + '╝\n', text_file)
-
-
-def get_border(char, length):
-    border = ''
-    for i in range(length):
-        border += char
-    return border
 
 
 def print_legend(text_file):
