@@ -103,7 +103,7 @@ def main():
 
     text_file.close()
 
-    app = App(contiguous_coordinates)
+    app = App(contiguous_coordinates, winning_ratios)
     app.run_mainloop()
 
 

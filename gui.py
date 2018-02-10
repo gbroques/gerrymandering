@@ -11,9 +11,13 @@ TITLE = 'Gerrymandering'
 CANVAS_DIMENSION = 500
 
 
-class App:
+def prop(n):
+    return 360.0 * n / 1000
 
+
+class App:
     __coordinate_list = []
+    __winning_ratios = {}
     __current_district = 0
     __root = None
     __canvas = None
@@ -23,10 +27,15 @@ class App:
     __toggle_button = None
     __prev_button = None
     __next_button = None
+    __aggregate_button = None
     __toggle_results = False
+    __toggle_aggregate = False
+    __pie_chart_pieces = None
 
-    def __init__(self, coordinate_list):
+    def __init__(self, coordinate_list, winning_ratios):
         self.__coordinate_list = coordinate_list
+        self.__winning_ratios = winning_ratios
+        self.__pie_chart_pieces = [None for _ in range(len(winning_ratios.keys()))]
         self.__root = self.__init_root()
         self.__canvas = self.__init_canvas()
 
@@ -52,10 +61,11 @@ class App:
         self.__root.columnconfigure(1, weight=1)
         self.__root.columnconfigure(2, weight=1)
         self.__canvas.grid(row=0, columnspan=3, padx=15, pady=15)
-        winner_label.grid(row=1, columnspan=3, pady=15, sticky=W+E)
-        self.__prev_button.grid(row=2, column=0, sticky=W+E, padx=15, pady=15)
-        self.__toggle_button.grid(row=2, column=1, sticky=W+E, pady=15)
-        self.__next_button.grid(row=2, column=2, sticky=W+E, padx=15, pady=15)
+        winner_label.grid(row=1, columnspan=3, pady=15, sticky=W + E)
+        self.__prev_button.grid(row=2, column=0, sticky=W + E, padx=15, pady=15)
+        self.__toggle_button.grid(row=2, column=1, sticky=W + E, pady=15)
+        self.__next_button.grid(row=2, column=2, sticky=W + E, padx=15, pady=15)
+        self.__aggregate_button.grid(row=3, columnspan=3, padx=15, pady=15, sticky=W + E)
 
     def __get_winner_text(self):
         election_winner = self.__get_election_winner()
@@ -92,6 +102,9 @@ class App:
 
         prev_button_kwargs = self.__get_prev_button_kwargs(button_font)
         self.__prev_button = Button(self.__root, prev_button_kwargs)
+
+        aggregate_button_kwargs = self.__get_aggregate_button_kwargs(button_font)
+        self.__aggregate_button = Button(self.__root, aggregate_button_kwargs)
 
     def __init_canvas(self):
         return Canvas(self.__root,
@@ -145,7 +158,8 @@ class App:
                 square_coordinates = self.__get_square_coordinates(i, j, square_size)
                 self.__tiles[index] = self.__canvas.create_rectangle(*square_coordinates, fill=color)
                 font_coordinates = self.__get_font_coordinates(i, j, square_size)
-                self.__district_nums[index] = self.__canvas.create_text(*font_coordinates, text=district, font=('Helvetica', 28))
+                self.__district_nums[index] = self.__canvas.create_text(*font_coordinates, text=district,
+                                                                        font=('Helvetica', 28))
 
     def __get_coordinates(self):
         return self.__coordinate_list[self.__current_district]
@@ -206,6 +220,13 @@ class App:
             'state': DISABLED
         }
 
+    def __get_aggregate_button_kwargs(self, button_font):
+        return {
+            'text': 'Show Aggregate Results',
+            'font': button_font,
+            'command': lambda: self.__toggle_aggregate_results(),
+        }
+
     @staticmethod
     def __get_font_coordinates(i, j, square_size):
         x = (square_size * j) + square_size / 2
@@ -230,6 +251,11 @@ class App:
         return colors[district - 1]
 
     @staticmethod
+    def __get_pie_chart_piece_color(index):
+        colors = ['#FAF402', '#00AC36', '#E00022', '#294994']
+        return colors[index]
+
+    @staticmethod
     def __get_election_winner_text(election_winner, winning_ratio):
         winning_ratio_parts = winning_ratio.split(':')
         if election_winner == G:
@@ -237,3 +263,51 @@ class App:
         else:
             winning_ratio_text = winning_ratio_parts[1] + ' to ' + winning_ratio_parts[0]
         return 'Election Winner: ' + election_winner + ' ' + winning_ratio_text
+
+    def __toggle_aggregate_results(self):
+        self.__toggle_aggregate = False if self.__toggle_aggregate else True
+
+        if self.__toggle_aggregate:
+            self.__show_aggregate_results()
+        else:
+            self.__hide_aggregate_results()
+
+    def __show_aggregate_results(self):
+        for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
+            self.__canvas.itemconfig(self.__tiles[i], state=HIDDEN)
+            self.__canvas.itemconfig(self.__district_nums[i], state=HIDDEN)
+        self.__next_button.config(state=DISABLED)
+        self.__prev_button.config(state=DISABLED)
+        self.__toggle_button.config(state=DISABLED)
+        self.__winner_text.set("Aggregate Winning Ratios")
+        self.__aggregate_button['text'] = 'Hide Aggregate Results'
+        self.__create_pie_chart()
+
+    def __create_pie_chart(self):
+        pie_chart_coordinates = (100, 100, 400, 400)
+        num_contiguous = len(self.__coordinate_list)
+        i = 0
+        start_arc = 0
+        for key in self.__winning_ratios.keys():
+            percent = self.__winning_ratios[key] / num_contiguous
+            pie_chart_color = self.__get_pie_chart_piece_color(i)
+            extent = percent * 1000
+            self.__pie_chart_pieces[i] = self.__canvas.create_arc(pie_chart_coordinates,
+                                                                  fill=pie_chart_color, outline=pie_chart_color,
+                                                                  start=prop(start_arc), extent=prop(extent))
+            if extent + start_arc >= 1000:
+                break
+            start_arc = extent
+            i += 1
+
+    def __hide_aggregate_results(self):
+        for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
+            self.__canvas.itemconfig(self.__tiles[i], state=NORMAL)
+            self.__canvas.itemconfig(self.__district_nums[i], state=NORMAL)
+        self.__next_button.config(state=self.__is_next_button_enabled())
+        self.__prev_button.config(state=self.__is_prev_button_enabled())
+        self.__toggle_button.config(state=NORMAL)
+        self.__update_winner_text()
+        self.__aggregate_button['text'] = 'Show Aggregate Results'
+        for i in range(len(self.__pie_chart_pieces)):
+            self.__canvas.itemconfig(self.__pie_chart_pieces[i], state=HIDDEN)
