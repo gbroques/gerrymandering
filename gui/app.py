@@ -7,16 +7,13 @@ from district_winners import get_winning_ratio
 from gui.buttons import *
 from gui.canvas import *
 from gui.colors import *
+from gui.pie_chart import PieChart
+from gui.pie_chart import get_pie_chart_percents
 
 TITLE = 'Gerrymandering'
 
 
-def prop(n):
-    return 360.0 * n / 1000
-
-
 class App:
-    __coordinate_list = []
     __winning_ratios = {}
     __current_district = 0
     __result_number_text = None
@@ -30,10 +27,10 @@ class App:
     def __init__(self, coordinate_list, winning_ratios):
         self.__coordinate_list = coordinate_list
         self.__winning_ratios = winning_ratios
-        self.__pie_chart_pieces = [None for _ in range(len(winning_ratios.keys()))]
         self.__ratio_labels = [None for _ in range(len(winning_ratios.keys()))]
         self.__root = self.__init_root()
         self.__canvas = Canvas(self.__root)
+        self.__pie_chart = PieChart(len(winning_ratios.keys()))
 
         self.__canvas.draw(self.__get_coordinates())
 
@@ -56,10 +53,10 @@ class App:
         i = 0
         for key in winning_ratios.keys():
             self.__ratio_labels[i] = tk.Label(self.__root,
-                                           text=key,
-                                           font=label_font,
-                                           activebackground=get_pie_chart_piece_color(i),
-                                           state=DISABLED)
+                                              text=key,
+                                              font=label_font,
+                                              activebackground=get_pie_chart_piece_color(i),
+                                              state=tk.DISABLED)
             i += 1
 
     def __get_result_number_text(self):
@@ -223,26 +220,10 @@ class App:
         self.__toggle_button.config(state=DISABLED)
         self.__winner_text.set("Aggregate Winning Ratios (Green : Purple)")
         self.__aggregate_button['text'] = 'Hide Aggregate Results'
-        self.__create_pie_chart()
+        percents = get_pie_chart_percents(self.__winning_ratios, len(self.__coordinate_list))
+        self.__pie_chart.draw(self.__canvas.canvas, percents)
         for i in range(len(self.__ratio_labels)):
             self.__ratio_labels[i].config(state=tk.ACTIVE)
-
-    def __create_pie_chart(self):
-        pie_chart_coordinates = (100, 100, 400, 400)
-        num_contiguous = len(self.__coordinate_list)
-        i = 0
-        start_arc = 0
-        for key in self.__winning_ratios.keys():
-            percent = self.__winning_ratios[key] / num_contiguous
-            pie_chart_color = get_pie_chart_piece_color(i)
-            extent = percent * 1000
-            self.__pie_chart_pieces[i] = self.__canvas.canvas.create_arc(pie_chart_coordinates,
-                                                                         fill=pie_chart_color, outline=pie_chart_color,
-                                                                         start=prop(start_arc), extent=prop(extent))
-            if extent + start_arc >= 1000:
-                break
-            start_arc = extent
-            i += 1
 
     def __hide_aggregate_results(self):
         self.__result_number_label.config(state=tk.NORMAL)
@@ -254,8 +235,8 @@ class App:
         self.__toggle_button.config(state=tk.NORMAL)
         self.__update_winner_text()
         self.__aggregate_button['text'] = 'Show Aggregate Results'
-        for i in range(len(self.__pie_chart_pieces)):
-            self.__canvas.canvas.itemconfig(self.__pie_chart_pieces[i], state=tk.HIDDEN)
+        for i in range(self.__pie_chart.num_pieces):
+            self.__canvas.canvas.itemconfig(self.__pie_chart.pieces[i], state=tk.HIDDEN)
             self.__ratio_labels[i].config(state=tk.DISABLED)
 
     def __create_buttons(self):
@@ -267,3 +248,4 @@ class App:
                                                 self.__handle_prev)
         self.__aggregate_button = create_aggregate_button(self.__root,
                                                           self.__toggle_aggregate_results)
+
