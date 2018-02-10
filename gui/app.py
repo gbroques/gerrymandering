@@ -11,6 +11,7 @@ from gui.pie_chart import PieChart
 from gui.pie_chart import get_pie_chart_percents
 from gui.winning_ratio_labels import WinningRatioLabels
 from gui.styles import LABEL_FONT
+from gui.pagination_label import PaginationLabel
 
 TITLE = 'Gerrymandering'
 
@@ -18,8 +19,6 @@ TITLE = 'Gerrymandering'
 class App:
     __winning_ratios = {}
     __current_district = 0
-    __result_number_text = None
-    __result_number_label = None
     __winner_text = None
     __toggle_results = False
     __toggle_aggregate = False
@@ -37,20 +36,11 @@ class App:
         self.__winner_text = self.__get_winner_text()
         winner_label = tk.Label(self.__root, textvariable=self.__winner_text, font=LABEL_FONT)
 
-        result_number_text = self.__get_result_number_text()
-        self.__result_number_text = tk.StringVar(value=result_number_text)
-        self.__result_number_label = tk.Label(self.__root, textvariable=self.__result_number_text, font=LABEL_FONT)
+        self.__pagination_label = PaginationLabel(self.__root, len(coordinate_list))
 
         self.__create_buttons()
 
         self.__init_grid_layout(winner_label)
-
-    def __get_result_number_text(self):
-        num_results = len(self.__coordinate_list)
-        return 'Result ' + str((self.__current_district + 1)) + ' out of ' + str(num_results)
-
-    def __update_result_number_text(self):
-        self.__result_number_text.set(self.__get_result_number_text())
 
     def run_mainloop(self):
         self.__root.mainloop()
@@ -63,26 +53,29 @@ class App:
         return root
 
     def __init_grid_layout(self, winner_label):
-        self.__root.columnconfigure(0, weight=1, uniform='a')
-        self.__root.columnconfigure(1, weight=1, uniform='a')
-        self.__root.columnconfigure(2, weight=1, uniform='a')
-        self.__root.columnconfigure(3, weight=1, uniform='a')
+        group = 'group'
+        self.__root.columnconfigure(0, weight=1, uniform=group)
+        self.__root.columnconfigure(1, weight=1, uniform=group)
+        self.__root.columnconfigure(2, weight=1, uniform=group)
+        self.__root.columnconfigure(3, weight=1, uniform=group)
 
-        self.__root.rowconfigure(0, pad=40)
-        self.__root.rowconfigure(2, pad=40)
-        self.__root.rowconfigure(5, pad=40)
+        row_padding = 40
+        self.__root.rowconfigure(0, pad=row_padding)
+        self.__root.rowconfigure(2, pad=row_padding)
+        self.__root.rowconfigure(5, pad=row_padding)
 
-        self.__result_number_label.grid(row=0, columnspan=4)
-        self.__canvas.instance.grid(row=1, columnspan=4, padx=10)
+        padding = 10
+        self.__pagination_label.grid(row=0, columnspan=4)
+        self.__canvas.instance.grid(row=1, columnspan=4, padx=padding)
         winner_label.grid(row=2, columnspan=4, sticky=tk.W + tk.E)
-        self.__prev_button.grid(row=3, column=0, sticky=tk.W + tk.E, padx=10)
+        self.__prev_button.grid(row=3, column=0, sticky=tk.W + tk.E, padx=padding)
         self.__toggle_button.grid(row=3, column=1, columnspan=2, sticky=tk.W + tk.E)
-        self.__next_button.grid(row=3, column=3, sticky=tk.W + tk.E, padx=10)
-        self.__aggregate_button.grid(row=4, columnspan=4, sticky=tk.W + tk.E, pady=(20, 0), padx=10)
-        self.__ratio_labels[0].grid(row=5, column=0, sticky=tk.W + tk.E, padx=(10, 5))
-        self.__ratio_labels[1].grid(row=5, column=1, sticky=tk.W + tk.E, padx=5)
-        self.__ratio_labels[2].grid(row=5, column=2, sticky=tk.W + tk.E, padx=5)
-        self.__ratio_labels[3].grid(row=5, column=3, sticky=tk.W + tk.E, padx=(5, 10))
+        self.__next_button.grid(row=3, column=3, sticky=tk.W + tk.E, padx=padding)
+        self.__aggregate_button.grid(row=4, columnspan=4, sticky=tk.W + tk.E, pady=(padding*2, 0), padx=padding)
+        self.__ratio_labels[0].grid(row=5, column=0, sticky=tk.W + tk.E, padx=(padding, padding/2))
+        self.__ratio_labels[1].grid(row=5, column=1, sticky=tk.W + tk.E, padx=padding/2)
+        self.__ratio_labels[2].grid(row=5, column=2, sticky=tk.W + tk.E, padx=padding/2)
+        self.__ratio_labels[3].grid(row=5, column=3, sticky=tk.W + tk.E, padx=(padding/2, padding))
 
     def __get_winner_text(self):
         election_winner = self.__get_election_winner()
@@ -113,12 +106,14 @@ class App:
         self.__prev_button.config(state=tk.NORMAL)
         self.__next_button.config(state=self.__is_next_button_enabled())
         self.__redraw()
+        self.__pagination_label.next()
 
     def __handle_prev(self):
         self.__current_district -= 1
         self.__prev_button.config(state=self.__is_prev_button_enabled())
         self.__next_button.config(state=self.__is_next_button_enabled())
         self.__redraw()
+        self.__pagination_label.prev()
 
     def __is_prev_button_enabled(self):
         return DISABLED if self.__current_district == 0 else tk.NORMAL
@@ -140,7 +135,6 @@ class App:
                 self.__toggle_results = False
                 self.__toggle_button['text'] = 'Show District Results'
                 self.__update_winner_text()
-                self.__update_result_number_text()
 
     def __get_coordinates(self):
         return self.__coordinate_list[self.__current_district]
@@ -166,7 +160,7 @@ class App:
                     fill = 'magenta'
 
                 self.__canvas.itemconfig(self.__canvas.tiles[index], fill=fill)
-        self.__toggle_button['text'] = 'Hide District Results'
+        self.__toggle_button['text'] = 'Hide ' + TOGGLE_BUTTON_TEXT
 
     def __hide_district_results(self):
         coordinates = self.__get_coordinates()
@@ -177,7 +171,7 @@ class App:
                 district = contiguous_districts[index]
                 color = get_district_color(district)
                 self.__canvas.itemconfig(self.__canvas.tiles[index], fill=color)
-        self.__toggle_button['text'] = 'Show District Results'
+        self.__toggle_button['text'] = 'Show ' + TOGGLE_BUTTON_TEXT
 
     @staticmethod
     def __get_election_winner_text(election_winner, winning_ratio):
@@ -197,22 +191,22 @@ class App:
             self.__hide_aggregate_results()
 
     def __show_aggregate_results(self):
-        self.__result_number_label.config(state=DISABLED)
+        self.__pagination_label.config(state=tk.DISABLED)
         for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
             self.__canvas.itemconfig(self.__canvas.tiles[i], state=tk.HIDDEN)
             self.__canvas.itemconfig(self.__canvas.district_nums[i], state=tk.HIDDEN)
-        self.__next_button.config(state=DISABLED)
-        self.__prev_button.config(state=DISABLED)
-        self.__toggle_button.config(state=DISABLED)
+        self.__next_button.config(state=tk.DISABLED)
+        self.__prev_button.config(state=tk.DISABLED)
+        self.__toggle_button.config(state=tk.DISABLED)
         self.__winner_text.set("Aggregate Winning Ratios (Green : Purple)")
-        self.__aggregate_button['text'] = 'Hide Aggregate Results'
+        self.__aggregate_button['text'] = 'Hide ' + AGGREGATE_BUTTON_TEXT
         percents = get_pie_chart_percents(self.__winning_ratios, len(self.__coordinate_list))
         self.__pie_chart.draw(self.__canvas.instance, percents)
         for i in range(self.__ratio_labels.length):
             self.__ratio_labels[i].config(state=tk.ACTIVE)
 
     def __hide_aggregate_results(self):
-        self.__result_number_label.config(state=tk.NORMAL)
+        self.__pagination_label.config(state=tk.NORMAL)
         for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
             self.__canvas.itemconfig(self.__canvas.tiles[i], state=tk.NORMAL)
             self.__canvas.itemconfig(self.__canvas.district_nums[i], state=tk.NORMAL)
@@ -220,7 +214,7 @@ class App:
         self.__prev_button.config(state=self.__is_prev_button_enabled())
         self.__toggle_button.config(state=tk.NORMAL)
         self.__update_winner_text()
-        self.__aggregate_button['text'] = 'Show Aggregate Results'
+        self.__aggregate_button['text'] = 'Show ' + AGGREGATE_BUTTON_TEXT
         for i in range(self.__pie_chart.num_pieces):
             self.__canvas.itemconfig(self.__pie_chart.pieces[i], state=tk.HIDDEN)
             self.__ratio_labels[i].config(state=tk.DISABLED)
