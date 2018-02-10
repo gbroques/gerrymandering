@@ -1,15 +1,14 @@
 from tkinter import *
 
 from constants import G
-from constants import NUM_DISTRICTS
 from coordinates import get_district_winners
-from coordinates import get_districts_from_coordinates
 from district_winners import get_election_winner
 from district_winners import get_winning_ratio
 from gui.buttons import *
+from gui.canvas import *
+from gui.colors import *
 
 TITLE = 'Gerrymandering'
-CANVAS_DIMENSION = 500
 
 
 def prop(n):
@@ -20,17 +19,11 @@ class App:
     __coordinate_list = []
     __winning_ratios = {}
     __current_district = 0
-    __root = None
     __result_number_text = None
     __result_number_label = None
-    __canvas = None
     __winner_text = None
     __tiles = [None for _ in range(NUM_DISTRICTS * NUM_DISTRICTS)]
     __district_nums = [None for _ in range(NUM_DISTRICTS * NUM_DISTRICTS)]
-    __toggle_button = None
-    __prev_button = None
-    __next_button = None
-    __aggregate_button = None
     __toggle_results = False
     __toggle_aggregate = False
     __pie_chart_pieces = None
@@ -42,9 +35,9 @@ class App:
         self.__pie_chart_pieces = [None for _ in range(len(winning_ratios.keys()))]
         self.__ratio_labels = [None for _ in range(len(winning_ratios.keys()))]
         self.__root = self.__init_root()
-        self.__canvas = self.__init_canvas()
+        self.__canvas = init_canvas(self.__root)
 
-        self.__create_canvas()
+        create_canvas(self.__canvas, self.__get_coordinates(), self.__tiles, self.__district_nums)
 
         label_font = ('Helvetica', 16)
 
@@ -57,16 +50,19 @@ class App:
 
         self.__create_buttons()
 
+        self.create_winning_ratio_labels(label_font, winning_ratios)
+
+        self.__init_grid_layout(winner_label)
+
+    def create_winning_ratio_labels(self, label_font, winning_ratios):
         i = 0
         for key in winning_ratios.keys():
             self.__ratio_labels[i] = Label(self.__root,
                                            text=key,
                                            font=label_font,
-                                           activebackground=self.__get_pie_chart_piece_color(i),
+                                           activebackground=get_pie_chart_piece_color(i),
                                            state=DISABLED)
             i += 1
-
-        self.__init_grid_layout(winner_label)
 
     def __get_result_number_text(self):
         num_results = len(self.__coordinate_list)
@@ -131,12 +127,6 @@ class App:
         winning_ratio = self.__get_winning_ratio()
         self.__winner_text.set(self.__get_election_winner_text(election_winner, winning_ratio))
 
-    def __init_canvas(self):
-        return Canvas(self.__root,
-                      width=CANVAS_DIMENSION,
-                      height=CANVAS_DIMENSION,
-                      background='white')
-
     def __handle_next(self):
         self.__current_district += 1
         self.__prev_button.config(state=NORMAL)
@@ -163,29 +153,13 @@ class App:
             for j in range(NUM_DISTRICTS):
                 index = i * NUM_DISTRICTS + j
                 district = districts[index]
-                color = self.__get_district_color(district)
+                color = get_district_color(district)
                 self.__canvas.itemconfig(self.__tiles[index], fill=color)
                 self.__canvas.itemconfig(self.__district_nums[index], text=district)
                 self.__toggle_results = False
                 self.__toggle_button['text'] = 'Show District Results'
                 self.__update_winner_text()
                 self.__update_result_number_text()
-
-    def __create_canvas(self):
-        square_size = CANVAS_DIMENSION / NUM_DISTRICTS
-        coordinates = self.__get_coordinates()
-        contiguous_districts = get_districts_from_coordinates(coordinates)
-
-        for i in range(NUM_DISTRICTS):
-            for j in range(NUM_DISTRICTS):
-                index = i * NUM_DISTRICTS + j
-                district = contiguous_districts[index]
-                color = self.__get_district_color(district)
-                square_coordinates = self.__get_square_coordinates(i, j, square_size)
-                self.__tiles[index] = self.__canvas.create_rectangle(*square_coordinates, fill=color)
-                font_coordinates = self.__get_font_coordinates(i, j, square_size)
-                self.__district_nums[index] = self.__canvas.create_text(*font_coordinates, text=district,
-                                                                        font=('Helvetica', 28))
 
     def __get_coordinates(self):
         return self.__coordinate_list[self.__current_district]
@@ -220,38 +194,9 @@ class App:
             for j in range(NUM_DISTRICTS):
                 index = i * NUM_DISTRICTS + j
                 district = contiguous_districts[index]
-                color = self.__get_district_color(district)
+                color = get_district_color(district)
                 self.__canvas.itemconfig(self.__tiles[index], fill=color)
         self.__toggle_button['text'] = 'Show District Results'
-
-    @staticmethod
-    def __get_font_coordinates(i, j, square_size):
-        x = (square_size * j) + square_size / 2
-        y = (square_size * i) + square_size / 2
-        return x, y
-
-    @staticmethod
-    def __get_square_coordinates(i, j, square_size):
-        x0 = square_size * j
-        y0 = square_size * i
-        x1 = square_size * (j + 1)
-        y1 = square_size * (i + 1)
-        return x0, y0, x1, y1
-
-    @staticmethod
-    def __get_district_color(district):
-        colors = ['#f44336',  # Red
-                  '#9C27B0',  # Purple
-                  '#2196F3',  # Blue
-                  '#4CAF50',  # Green
-                  '#FFC107']  # Amber
-        return colors[district - 1]
-
-    @staticmethod
-    def __get_pie_chart_piece_color(index):
-        # Red, Blue, Green, Amber
-        colors = ['#f44336', '#2196F3', '#4CAF50', '#FFC107']
-        return colors[index]
 
     @staticmethod
     def __get_election_winner_text(election_winner, winning_ratio):
@@ -291,7 +236,7 @@ class App:
         start_arc = 0
         for key in self.__winning_ratios.keys():
             percent = self.__winning_ratios[key] / num_contiguous
-            pie_chart_color = self.__get_pie_chart_piece_color(i)
+            pie_chart_color = get_pie_chart_piece_color(i)
             extent = percent * 1000
             self.__pie_chart_pieces[i] = self.__canvas.create_arc(pie_chart_coordinates,
                                                                   fill=pie_chart_color, outline=pie_chart_color,
