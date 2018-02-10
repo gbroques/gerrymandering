@@ -20,6 +20,8 @@ class App:
     __winning_ratios = {}
     __current_district = 0
     __root = None
+    __result_number_text = None
+    __result_number_label = None
     __canvas = None
     __winner_text = None
     __tiles = [None for _ in range(NUM_DISTRICTS * NUM_DISTRICTS)]
@@ -43,8 +45,14 @@ class App:
 
         self.__create_canvas()
 
+        label_font = ('Helvetica', 16)
+
         self.__winner_text = self.__get_winner_text()
-        winner_label = Label(self.__root, textvariable=self.__winner_text, font=('Helvetica', 16))
+        winner_label = Label(self.__root, textvariable=self.__winner_text, font=label_font)
+
+        result_number_text = self.__get_result_number_text()
+        self.__result_number_text = StringVar(value=result_number_text)
+        self.__result_number_label = Label(self.__root, textvariable=self.__result_number_text, font=label_font)
 
         self.__create_buttons()
 
@@ -52,12 +60,19 @@ class App:
         for key in winning_ratios.keys():
             self.__ratio_labels[i] = Label(self.__root,
                                            text=key,
-                                           font=('Helvetica', 16),
+                                           font=label_font,
                                            activebackground=self.__get_pie_chart_piece_color(i),
                                            state=DISABLED)
             i += 1
 
         self.__init_grid_layout(winner_label)
+
+    def __get_result_number_text(self):
+        num_results = len(self.__coordinate_list)
+        return 'Result ' + str((self.__current_district + 1)) + ' out of ' + str(num_results)
+
+    def __update_result_number_text(self):
+        self.__result_number_text.set(self.__get_result_number_text())
 
     def run_mainloop(self):
         self.__root.mainloop()
@@ -74,19 +89,22 @@ class App:
         self.__root.columnconfigure(1, weight=1, uniform='a')
         self.__root.columnconfigure(2, weight=1, uniform='a')
         self.__root.columnconfigure(3, weight=1, uniform='a')
-        self.__root.rowconfigure(1, pad=40)
-        self.__root.rowconfigure(4, pad=40)
 
-        self.__canvas.grid(row=0, columnspan=4, pady=10, padx=10)
-        winner_label.grid(row=1, columnspan=4, sticky=W + E)
-        self.__prev_button.grid(row=2, column=0, sticky=W + E, padx=10)
-        self.__toggle_button.grid(row=2, column=1, columnspan=2, sticky=W + E)
-        self.__next_button.grid(row=2, column=3, sticky=W + E, padx=10)
-        self.__aggregate_button.grid(row=3, columnspan=4, sticky=W + E, pady=(20, 0), padx=10)
-        self.__ratio_labels[0].grid(row=4, column=0, sticky=W + E, padx=(10, 5))
-        self.__ratio_labels[1].grid(row=4, column=1, sticky=W + E, padx=5)
-        self.__ratio_labels[2].grid(row=4, column=2, sticky=W + E, padx=5)
-        self.__ratio_labels[3].grid(row=4, column=3, sticky=W + E, padx=(5, 10))
+        self.__root.rowconfigure(0, pad=40)
+        self.__root.rowconfigure(2, pad=40)
+        self.__root.rowconfigure(5, pad=40)
+
+        self.__result_number_label.grid(row=0, columnspan=4)
+        self.__canvas.grid(row=1, columnspan=4, padx=10)
+        winner_label.grid(row=2, columnspan=4, sticky=W + E)
+        self.__prev_button.grid(row=3, column=0, sticky=W + E, padx=10)
+        self.__toggle_button.grid(row=3, column=1, columnspan=2, sticky=W + E)
+        self.__next_button.grid(row=3, column=3, sticky=W + E, padx=10)
+        self.__aggregate_button.grid(row=4, columnspan=4, sticky=W + E, pady=(20, 0), padx=10)
+        self.__ratio_labels[0].grid(row=5, column=0, sticky=W + E, padx=(10, 5))
+        self.__ratio_labels[1].grid(row=5, column=1, sticky=W + E, padx=5)
+        self.__ratio_labels[2].grid(row=5, column=2, sticky=W + E, padx=5)
+        self.__ratio_labels[3].grid(row=5, column=3, sticky=W + E, padx=(5, 10))
 
     def __get_winner_text(self):
         election_winner = self.__get_election_winner()
@@ -165,6 +183,7 @@ class App:
                 self.__toggle_results = False
                 self.__toggle_button['text'] = 'Show District Results'
                 self.__update_winner_text()
+                self.__update_result_number_text()
 
     def __create_canvas(self):
         square_size = CANVAS_DIMENSION / NUM_DISTRICTS
@@ -295,6 +314,7 @@ class App:
             self.__hide_aggregate_results()
 
     def __show_aggregate_results(self):
+        self.__result_number_label.config(state=DISABLED)
         for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
             self.__canvas.itemconfig(self.__tiles[i], state=HIDDEN)
             self.__canvas.itemconfig(self.__district_nums[i], state=HIDDEN)
@@ -325,6 +345,7 @@ class App:
             i += 1
 
     def __hide_aggregate_results(self):
+        self.__result_number_label.config(state=NORMAL)
         for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
             self.__canvas.itemconfig(self.__tiles[i], state=NORMAL)
             self.__canvas.itemconfig(self.__district_nums[i], state=NORMAL)
