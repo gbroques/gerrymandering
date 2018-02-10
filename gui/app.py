@@ -87,7 +87,7 @@ class App:
         self.__root.rowconfigure(5, pad=40)
 
         self.__result_number_label.grid(row=0, columnspan=4)
-        self.__canvas.canvas.grid(row=1, columnspan=4, padx=10)
+        self.__canvas.instance.grid(row=1, columnspan=4, padx=10)
         winner_label.grid(row=2, columnspan=4, sticky=tk.W + tk.E)
         self.__prev_button.grid(row=3, column=0, sticky=tk.W + tk.E, padx=10)
         self.__toggle_button.grid(row=3, column=1, columnspan=2, sticky=tk.W + tk.E)
@@ -149,8 +149,8 @@ class App:
                 index = i * NUM_DISTRICTS + j
                 district = districts[index]
                 color = get_district_color(district)
-                self.__canvas.canvas.itemconfig(self.__canvas.tiles[index], fill=color)
-                self.__canvas.canvas.itemconfig(self.__canvas.district_nums[index], text=district)
+                self.__canvas.itemconfig(self.__canvas.tiles[index], fill=color)
+                self.__canvas.itemconfig(self.__canvas.district_nums[index], text=district)
                 self.__toggle_results = False
                 self.__toggle_button['text'] = 'Show District Results'
                 self.__update_winner_text()
@@ -179,7 +179,7 @@ class App:
                 else:
                     fill = 'magenta'
 
-                self.__canvas.canvas.itemconfig(self.__canvas.tiles[index], fill=fill)
+                self.__canvas.itemconfig(self.__canvas.tiles[index], fill=fill)
         self.__toggle_button['text'] = 'Hide District Results'
 
     def __hide_district_results(self):
@@ -190,7 +190,7 @@ class App:
                 index = i * NUM_DISTRICTS + j
                 district = contiguous_districts[index]
                 color = get_district_color(district)
-                self.__canvas.canvas.itemconfig(self.__canvas.tiles[index], fill=color)
+                self.__canvas.itemconfig(self.__canvas.tiles[index], fill=color)
         self.__toggle_button['text'] = 'Show District Results'
 
     @staticmethod
@@ -213,30 +213,30 @@ class App:
     def __show_aggregate_results(self):
         self.__result_number_label.config(state=DISABLED)
         for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
-            self.__canvas.canvas.itemconfig(self.__canvas.tiles[i], state=tk.HIDDEN)
-            self.__canvas.canvas.itemconfig(self.__canvas.district_nums[i], state=tk.HIDDEN)
+            self.__canvas.itemconfig(self.__canvas.tiles[i], state=tk.HIDDEN)
+            self.__canvas.itemconfig(self.__canvas.district_nums[i], state=tk.HIDDEN)
         self.__next_button.config(state=DISABLED)
         self.__prev_button.config(state=DISABLED)
         self.__toggle_button.config(state=DISABLED)
         self.__winner_text.set("Aggregate Winning Ratios (Green : Purple)")
         self.__aggregate_button['text'] = 'Hide Aggregate Results'
         percents = get_pie_chart_percents(self.__winning_ratios, len(self.__coordinate_list))
-        self.__pie_chart.draw(self.__canvas.canvas, percents)
+        self.__pie_chart.draw(self.__canvas.instance, percents)
         for i in range(len(self.__ratio_labels)):
             self.__ratio_labels[i].config(state=tk.ACTIVE)
 
     def __hide_aggregate_results(self):
         self.__result_number_label.config(state=tk.NORMAL)
         for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
-            self.__canvas.canvas.itemconfig(self.__canvas.tiles[i], state=tk.NORMAL)
-            self.__canvas.canvas.itemconfig(self.__canvas.district_nums[i], state=tk.NORMAL)
+            self.__canvas.itemconfig(self.__canvas.tiles[i], state=tk.NORMAL)
+            self.__canvas.itemconfig(self.__canvas.district_nums[i], state=tk.NORMAL)
         self.__next_button.config(state=self.__is_next_button_enabled())
         self.__prev_button.config(state=self.__is_prev_button_enabled())
         self.__toggle_button.config(state=tk.NORMAL)
         self.__update_winner_text()
         self.__aggregate_button['text'] = 'Show Aggregate Results'
         for i in range(self.__pie_chart.num_pieces):
-            self.__canvas.canvas.itemconfig(self.__pie_chart.pieces[i], state=tk.HIDDEN)
+            self.__canvas.itemconfig(self.__pie_chart.pieces[i], state=tk.HIDDEN)
             self.__ratio_labels[i].config(state=tk.DISABLED)
 
     def __create_buttons(self):

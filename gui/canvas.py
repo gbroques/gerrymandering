@@ -10,7 +10,7 @@ _DIMENSION = 500
 
 class Canvas:
     def __init__(self, root):
-        self.canvas = self.init(root)
+        self.instance = self.init(root)
         self.tiles = self.get_empty_tiles()
         self.district_nums = self.get_empty_tiles()
 
@@ -20,6 +20,9 @@ class Canvas:
                          width=_DIMENSION,
                          height=_DIMENSION,
                          background=_BG_COLOR)
+
+    def itemconfig(self, tag_or_id, **kwargs):
+        self.instance.itemconfig(tag_or_id, kwargs)
 
     @staticmethod
     def get_empty_tiles():
@@ -42,12 +45,12 @@ class Canvas:
     def create_tile(self, district, i, j):
         color = get_district_color(district)
         tile_coordinates = self.__get_tile_coordinates(i, j)
-        return self.canvas.create_rectangle(*tile_coordinates, fill=color)
+        return self.instance.create_rectangle(*tile_coordinates, fill=color)
 
     def create_district_num(self, district, i, j):
         text_coordinates = self.__get_text_coordinates(i, j)
         text_kwargs = self.__get_text_kwargs(district)
-        return self.canvas.create_text(*text_coordinates, **text_kwargs)
+        return self.instance.create_text(*text_coordinates, **text_kwargs)
 
     @classmethod
     def __get_tile_coordinates(cls, i, j):
