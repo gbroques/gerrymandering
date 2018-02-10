@@ -6,6 +6,7 @@ from coordinates import get_district_winners
 from coordinates import get_districts_from_coordinates
 from district_winners import get_election_winner
 from district_winners import get_winning_ratio
+from gui.buttons import *
 
 TITLE = 'Gerrymandering'
 CANVAS_DIMENSION = 500
@@ -130,21 +131,6 @@ class App:
         winning_ratio = self.__get_winning_ratio()
         self.__winner_text.set(self.__get_election_winner_text(election_winner, winning_ratio))
 
-    def __create_buttons(self):
-        button_font = ('Helvetica', 16)
-
-        toggle_button_kwargs = self.__get_toggle_button_kwargs(button_font)
-        self.__toggle_button = Button(self.__root, toggle_button_kwargs)
-
-        next_button_kwargs = self.__get_next_button_kwargs(button_font)
-        self.__next_button = Button(self.__root, next_button_kwargs)
-
-        prev_button_kwargs = self.__get_prev_button_kwargs(button_font)
-        self.__prev_button = Button(self.__root, prev_button_kwargs)
-
-        aggregate_button_kwargs = self.__get_aggregate_button_kwargs(button_font)
-        self.__aggregate_button = Button(self.__root, aggregate_button_kwargs)
-
     def __init_canvas(self):
         return Canvas(self.__root,
                       width=CANVAS_DIMENSION,
@@ -238,35 +224,6 @@ class App:
                 self.__canvas.itemconfig(self.__tiles[index], fill=color)
         self.__toggle_button['text'] = 'Show District Results'
 
-    def __get_toggle_button_kwargs(self, button_font):
-        return {
-            'text': 'Show District Results',
-            'command': lambda: self.__toggle_district_results(),
-            'font': button_font
-        }
-
-    def __get_next_button_kwargs(self, button_font):
-        return {
-            'text': 'Next',
-            'font': button_font,
-            'command': lambda: self.__handle_next()
-        }
-
-    def __get_prev_button_kwargs(self, button_font):
-        return {
-            'text': 'Previous',
-            'font': button_font,
-            'command': lambda: self.__handle_prev(),
-            'state': DISABLED
-        }
-
-    def __get_aggregate_button_kwargs(self, button_font):
-        return {
-            'text': 'Show Aggregate Results',
-            'font': button_font,
-            'command': lambda: self.__toggle_aggregate_results(),
-        }
-
     @staticmethod
     def __get_font_coordinates(i, j, square_size):
         x = (square_size * j) + square_size / 2
@@ -357,3 +314,13 @@ class App:
         for i in range(len(self.__pie_chart_pieces)):
             self.__canvas.itemconfig(self.__pie_chart_pieces[i], state=HIDDEN)
             self.__ratio_labels[i].config(state=DISABLED)
+
+    def __create_buttons(self):
+        self.__toggle_button = create_toggle_button(self.__root,
+                                                    self.__toggle_district_results)
+        self.__next_button = create_next_button(self.__root,
+                                                self.__handle_next)
+        self.__prev_button = create_prev_button(self.__root,
+                                                self.__handle_prev)
+        self.__aggregate_button = create_aggregate_button(self.__root,
+                                                          self.__toggle_aggregate_results)
