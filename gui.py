@@ -31,11 +31,13 @@ class App:
     __toggle_results = False
     __toggle_aggregate = False
     __pie_chart_pieces = None
+    __ratio_labels = None
 
     def __init__(self, coordinate_list, winning_ratios):
         self.__coordinate_list = coordinate_list
         self.__winning_ratios = winning_ratios
         self.__pie_chart_pieces = [None for _ in range(len(winning_ratios.keys()))]
+        self.__ratio_labels = [None for _ in range(len(winning_ratios.keys()))]
         self.__root = self.__init_root()
         self.__canvas = self.__init_canvas()
 
@@ -45,6 +47,16 @@ class App:
         winner_label = Label(self.__root, textvariable=self.__winner_text, font=('Helvetica', 16))
 
         self.__create_buttons()
+
+        i = 0
+        for key in winning_ratios.keys():
+            self.__ratio_labels[i] = Label(self.__root,
+                                           text=key,
+                                           font=('Helvetica', 16),
+                                           activebackground=self.__get_pie_chart_piece_color(i),
+                                           state=DISABLED)
+            i += 1
+
         self.__init_grid_layout(winner_label)
 
     def run_mainloop(self):
@@ -54,18 +66,27 @@ class App:
     def __init_root():
         root = Tk()
         root.title(TITLE)
+        root.resizable(width=False, height=False)
         return root
 
     def __init_grid_layout(self, winner_label):
-        self.__root.columnconfigure(0, weight=1)
-        self.__root.columnconfigure(1, weight=1)
-        self.__root.columnconfigure(2, weight=1)
-        self.__canvas.grid(row=0, columnspan=3, padx=15, pady=15)
-        winner_label.grid(row=1, columnspan=3, pady=15, sticky=W + E)
-        self.__prev_button.grid(row=2, column=0, sticky=W + E, padx=15, pady=15)
-        self.__toggle_button.grid(row=2, column=1, sticky=W + E, pady=15)
-        self.__next_button.grid(row=2, column=2, sticky=W + E, padx=15, pady=15)
-        self.__aggregate_button.grid(row=3, columnspan=3, padx=15, pady=15, sticky=W + E)
+        self.__root.columnconfigure(0, weight=1, uniform='a')
+        self.__root.columnconfigure(1, weight=1, uniform='a')
+        self.__root.columnconfigure(2, weight=1, uniform='a')
+        self.__root.columnconfigure(3, weight=1, uniform='a')
+        self.__root.rowconfigure(1, pad=40)
+        self.__root.rowconfigure(4, pad=40)
+
+        self.__canvas.grid(row=0, columnspan=4, pady=10, padx=10)
+        winner_label.grid(row=1, columnspan=4, sticky=W + E)
+        self.__prev_button.grid(row=2, column=0, sticky=W + E, padx=10)
+        self.__toggle_button.grid(row=2, column=1, columnspan=2, sticky=W + E)
+        self.__next_button.grid(row=2, column=3, sticky=W + E, padx=10)
+        self.__aggregate_button.grid(row=3, columnspan=4, sticky=W + E, pady=(20, 0), padx=10)
+        self.__ratio_labels[0].grid(row=4, column=0, sticky=W + E, padx=(10, 5))
+        self.__ratio_labels[1].grid(row=4, column=1, sticky=W + E, padx=5)
+        self.__ratio_labels[2].grid(row=4, column=2, sticky=W + E, padx=5)
+        self.__ratio_labels[3].grid(row=4, column=3, sticky=W + E, padx=(5, 10))
 
     def __get_winner_text(self):
         election_winner = self.__get_election_winner()
@@ -252,7 +273,8 @@ class App:
 
     @staticmethod
     def __get_pie_chart_piece_color(index):
-        colors = ['#FAF402', '#00AC36', '#E00022', '#294994']
+        # Red, Blue, Green, Amber
+        colors = ['#f44336', '#2196F3', '#4CAF50', '#FFC107']
         return colors[index]
 
     @staticmethod
@@ -279,9 +301,11 @@ class App:
         self.__next_button.config(state=DISABLED)
         self.__prev_button.config(state=DISABLED)
         self.__toggle_button.config(state=DISABLED)
-        self.__winner_text.set("Aggregate Winning Ratios")
+        self.__winner_text.set("Aggregate Winning Ratios (Green : Purple)")
         self.__aggregate_button['text'] = 'Hide Aggregate Results'
         self.__create_pie_chart()
+        for i in range(len(self.__ratio_labels)):
+            self.__ratio_labels[i].config(state=ACTIVE)
 
     def __create_pie_chart(self):
         pie_chart_coordinates = (100, 100, 400, 400)
@@ -311,3 +335,5 @@ class App:
         self.__aggregate_button['text'] = 'Show Aggregate Results'
         for i in range(len(self.__pie_chart_pieces)):
             self.__canvas.itemconfig(self.__pie_chart_pieces[i], state=HIDDEN)
+            self.__ratio_labels[i].config(state=DISABLED)
+
