@@ -5,7 +5,7 @@ Course: [CS4500] Intro to the Software Profession - Section 001
 Version: 1.0.0
 
 Output Files:
-  * HW3output.txt (generated in the same directory as the program)
+  * HW4output.txt (generated in the same directory as the program)
 
 Sources:
   * https://docs.python.org/
@@ -19,7 +19,7 @@ Description:
   There are 15 green voters, and 10 purple voters. Making a 60-40 split.
   In each election, there is one green candidate, and one purple candidate in each district.
   Green voters always for the green candidate, and the purple voter always vote for the purple candidate.
-  Statistics are output to the terminal and a file named "HW3output.txt".
+  Statistics are output to the terminal and a file named "HW4output.txt".
 
   To get 30 contiguous random redistrictings it might take around 1 billion iterations,
   and 16 hours depending upon your machine.
@@ -38,7 +38,7 @@ from statistics import print_statistics
 from util import *
 
 # Name of output file
-OUTPUT_FILE = "HW3output.txt"
+OUTPUT_FILE = "HW4output.txt"
 
 
 def main():

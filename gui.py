@@ -357,4 +357,3 @@ class App:
         for i in range(len(self.__pie_chart_pieces)):
             self.__canvas.itemconfig(self.__pie_chart_pieces[i], state=HIDDEN)
             self.__ratio_labels[i].config(state=DISABLED)
-
