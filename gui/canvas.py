@@ -1,42 +1,74 @@
-from tkinter import Canvas
+import tkinter as tk
+
 from constants import NUM_DISTRICTS
 from coordinates import get_districts_from_coordinates
 from gui.colors import get_district_color
 
-_CANVAS_DIMENSION = 500
+_BG_COLOR = 'white'
+_DIMENSION = 500
 
 
-def init_canvas(root):
-    return Canvas(root,
-                  width=_CANVAS_DIMENSION,
-                  height=_CANVAS_DIMENSION,
-                  background='white')
+class Canvas:
+    def __init__(self, root):
+        self.canvas = self.init(root)
+        self.tiles = self.get_empty_tiles()
+        self.district_nums = self.get_empty_tiles()
 
+    @staticmethod
+    def init(root):
+        return tk.Canvas(root,
+                         width=_DIMENSION,
+                         height=_DIMENSION,
+                         background=_BG_COLOR)
 
-def create_canvas(canvas, coordinates, tiles, district_nums):
-    square_size = _CANVAS_DIMENSION / NUM_DISTRICTS
-    contiguous_districts = get_districts_from_coordinates(coordinates)
+    @staticmethod
+    def get_empty_tiles():
+        return [None for _ in range(NUM_DISTRICTS * NUM_DISTRICTS)]
 
-    for i in range(NUM_DISTRICTS):
-        for j in range(NUM_DISTRICTS):
-            index = i * NUM_DISTRICTS + j
-            district = contiguous_districts[index]
-            color = get_district_color(district)
-            square_coordinates = __get_square_coordinates(i, j, square_size)
-            tiles[index] = canvas.create_rectangle(*square_coordinates, fill=color)
-            font_coordinates = __get_font_coordinates(i, j, square_size)
-            district_nums[index] = canvas.create_text(*font_coordinates, text=district, font=('Helvetica', 28))
+    @staticmethod
+    def get_tile_size():
+        return _DIMENSION / NUM_DISTRICTS
 
+    def draw(self, coordinates):
+        districts = get_districts_from_coordinates(coordinates)
 
-def __get_font_coordinates(i, j, square_size):
-    x = (square_size * j) + square_size / 2
-    y = (square_size * i) + square_size / 2
-    return x, y
+        for i in range(NUM_DISTRICTS):
+            for j in range(NUM_DISTRICTS):
+                index = i * NUM_DISTRICTS + j
+                district = districts[index]
+                self.tiles[index] = self.create_tile(district, i, j)
+                self.district_nums[index] = self.create_district_num(district, i, j)
 
+    def create_tile(self, district, i, j):
+        color = get_district_color(district)
+        tile_coordinates = self.__get_tile_coordinates(i, j)
+        return self.canvas.create_rectangle(*tile_coordinates, fill=color)
 
-def __get_square_coordinates(i, j, square_size):
-    x0 = square_size * j
-    y0 = square_size * i
-    x1 = square_size * (j + 1)
-    y1 = square_size * (i + 1)
-    return x0, y0, x1, y1
+    def create_district_num(self, district, i, j):
+        text_coordinates = self.__get_text_coordinates(i, j)
+        text_kwargs = self.__get_text_kwargs(district)
+        return self.canvas.create_text(*text_coordinates, **text_kwargs)
+
+    @classmethod
+    def __get_tile_coordinates(cls, i, j):
+        tile_size = cls.get_tile_size()
+        x0 = tile_size * j
+        y0 = tile_size * i
+        x1 = tile_size * (j + 1)
+        y1 = tile_size * (i + 1)
+        return x0, y0, x1, y1
+
+    @classmethod
+    def __get_text_coordinates(cls, i, j):
+        tile_size = cls.get_tile_size()
+        x = (tile_size * j) + tile_size / 2
+        y = (tile_size * i) + tile_size / 2
+        return x, y
+
+    @staticmethod
+    def __get_text_kwargs(district):
+        return {
+            'text': district,
+            'font': ('Helvetica', 28)
+        }
+
