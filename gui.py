@@ -5,6 +5,7 @@ from constants import NUM_DISTRICTS
 from coordinates import get_district_winners
 from coordinates import get_districts_from_coordinates
 from district_winners import get_election_winner
+from district_winners import get_winning_ratio
 
 TITLE = 'Gerrymandering'
 CANVAS_DIMENSION = 500
@@ -58,17 +59,27 @@ class App:
 
     def __get_winner_text(self):
         election_winner = self.__get_election_winner()
-        return StringVar(value='Election Winner: ' + election_winner)
+        winning_ratio = self.__get_winning_ratio()
+        return StringVar(value=self.__get_election_winner_text(election_winner, winning_ratio))
 
-    def __get_election_winner(self):
+    def __get_winning_ratio(self):
+        district_winners = self.__get_district_winners()
+        return get_winning_ratio(district_winners)
+
+    def __get_district_winners(self):
         coordinates = self.__get_coordinates()
         district_winners = get_district_winners(coordinates)
+        return district_winners
+
+    def __get_election_winner(self):
+        district_winners = self.__get_district_winners()
         election_winner = get_election_winner(district_winners)
         return election_winner
 
     def __update_winner_text(self):
         election_winner = self.__get_election_winner()
-        self.__winner_text.set('Election Winner: ' + election_winner)
+        winning_ratio = self.__get_winning_ratio()
+        self.__winner_text.set(self.__get_election_winner_text(election_winner, winning_ratio))
 
     def __create_buttons(self):
         button_font = ('Helvetica', 16)
@@ -217,3 +228,12 @@ class App:
                   '#4CAF50',  # Green
                   '#FFC107']  # Amber
         return colors[district - 1]
+
+    @staticmethod
+    def __get_election_winner_text(election_winner, winning_ratio):
+        winning_ratio_parts = winning_ratio.split(':')
+        if election_winner == G:
+            winning_ratio_text = winning_ratio_parts[0] + ' to ' + winning_ratio_parts[1]
+        else:
+            winning_ratio_text = winning_ratio_parts[1] + ' to ' + winning_ratio_parts[0]
+        return 'Election Winner: ' + election_winner + ' ' + winning_ratio_text

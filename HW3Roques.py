@@ -83,14 +83,7 @@ def main():
         P: 0
     }
 
-    # Keep track which ratio wins each election.
-    # Key: 'num_green_wins:num_purple_wins'
-    winning_ratios = {
-        '2:3': 0,
-        '3:2': 0,
-        '4:1': 0,
-        '5:0': 0
-    }
+    winning_ratios = get_winning_ratios()
 
     for contiguous_coordinate in contiguous_coordinates:
         grid = from_coordinates_to_grid(contiguous_coordinate)
@@ -112,6 +105,20 @@ def main():
 
     app = App(contiguous_coordinates)
     app.run_mainloop()
+
+
+def get_winning_ratios():
+    """Get a dictionary to keep track which ratio wins each election.
+
+    Key: 'num_green_wins:num_purple_wins'
+    :return: Winning ratios dictionary.
+    """
+    return {
+        '2:3': 0,
+        '3:2': 0,
+        '4:1': 0,
+        '5:0': 0
+    }
 
 
 def print_loading_dots(i):
