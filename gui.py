@@ -4,6 +4,7 @@ from constants import G
 from constants import NUM_DISTRICTS
 from coordinates import get_district_winners
 from coordinates import get_districts_from_coordinates
+from district_winners import get_election_winner
 
 TITLE = 'Gerrymandering'
 CANVAS_DIMENSION = 500
@@ -15,6 +16,7 @@ class App:
     __current_district = 0
     __root = None
     __canvas = None
+    __winner_text = None
     __tiles = [None for _ in range(NUM_DISTRICTS * NUM_DISTRICTS)]
     __district_nums = [None for _ in range(NUM_DISTRICTS * NUM_DISTRICTS)]
     __toggle_button = None
@@ -24,17 +26,25 @@ class App:
 
     def __init__(self, coordinate_list):
         self.__coordinate_list = coordinate_list
-        self.__init_root()
-        self.__init_canvas()
+        self.__root = self.__init_root()
+        self.__canvas = self.__init_canvas()
 
         self.__create_canvas()
-        winner = StringVar(value='Election Winner: ')
-        winner_label = Label(self.__root, textvariable=winner, font=('Helvetica', 16))
+
+        self.__winner_text = self.__get_winner_text()
+        winner_label = Label(self.__root, textvariable=self.__winner_text, font=('Helvetica', 16))
+
         self.__create_buttons()
         self.__init_grid_layout(winner_label)
 
     def run_mainloop(self):
         self.__root.mainloop()
+
+    @staticmethod
+    def __init_root():
+        root = Tk()
+        root.title(TITLE)
+        return root
 
     def __init_grid_layout(self, winner_label):
         self.__root.columnconfigure(0, weight=1)
@@ -45,6 +55,20 @@ class App:
         self.__prev_button.grid(row=2, column=0, sticky=W+E, padx=15, pady=15)
         self.__toggle_button.grid(row=2, column=1, sticky=W+E, pady=15)
         self.__next_button.grid(row=2, column=2, sticky=W+E, padx=15, pady=15)
+
+    def __get_winner_text(self):
+        election_winner = self.__get_election_winner()
+        return StringVar(value='Election Winner: ' + election_winner)
+
+    def __get_election_winner(self):
+        coordinates = self.__get_coordinates()
+        district_winners = get_district_winners(coordinates)
+        election_winner = get_election_winner(district_winners)
+        return election_winner
+
+    def __update_winner_text(self):
+        election_winner = self.__get_election_winner()
+        self.__winner_text.set('Election Winner: ' + election_winner)
 
     def __create_buttons(self):
         button_font = ('Helvetica', 16)
@@ -58,22 +82,11 @@ class App:
         prev_button_kwargs = self.__get_prev_button_kwargs(button_font)
         self.__prev_button = Button(self.__root, prev_button_kwargs)
 
-    def __get_toggle_button_kwargs(self, button_font):
-        return {
-            'text': 'Show District Results',
-            'command': lambda: self.__toggle_district_results(),
-            'font': button_font
-        }
-
     def __init_canvas(self):
-        self.__canvas = Canvas(self.__root,
-                               width=CANVAS_DIMENSION,
-                               height=CANVAS_DIMENSION,
-                               background='white')
-
-    def __init_root(self):
-        self.__root = Tk()
-        self.__root.title(TITLE)
+        return Canvas(self.__root,
+                      width=CANVAS_DIMENSION,
+                      height=CANVAS_DIMENSION,
+                      background='white')
 
     def __handle_next(self):
         self.__current_district += 1
@@ -95,7 +108,7 @@ class App:
         return DISABLED if self.__current_district == (num_coordinates - 1) else NORMAL
 
     def __redraw(self):
-        coordinates = self.__coordinate_list[self.__current_district]
+        coordinates = self.__get_coordinates()
         districts = get_districts_from_coordinates(coordinates)
         for i in range(NUM_DISTRICTS):
             for j in range(NUM_DISTRICTS):
@@ -106,10 +119,11 @@ class App:
                 self.__canvas.itemconfig(self.__district_nums[index], text=district)
                 self.__toggle_results = False
                 self.__toggle_button['text'] = 'Show District Results'
+                self.__update_winner_text()
 
     def __create_canvas(self):
         square_size = CANVAS_DIMENSION / NUM_DISTRICTS
-        coordinates = self.__coordinate_list[self.__current_district]
+        coordinates = self.__get_coordinates()
         contiguous_districts = get_districts_from_coordinates(coordinates)
 
         for i in range(NUM_DISTRICTS):
@@ -122,6 +136,9 @@ class App:
                 font_coordinates = self.__get_font_coordinates(i, j, square_size)
                 self.__district_nums[index] = self.__canvas.create_text(*font_coordinates, text=district, font=('Helvetica', 28))
 
+    def __get_coordinates(self):
+        return self.__coordinate_list[self.__current_district]
+
     def __toggle_district_results(self):
         self.__toggle_results = False if self.__toggle_results else True
         if self.__toggle_results:
@@ -130,7 +147,7 @@ class App:
             self.__hide_district_results()
 
     def __show_district_results(self):
-        coordinates = self.__coordinate_list[self.__current_district]
+        coordinates = self.__get_coordinates()
         contiguous_districts = get_districts_from_coordinates(coordinates)
         winners = get_district_winners(coordinates)
         for i in range(NUM_DISTRICTS):
@@ -146,7 +163,7 @@ class App:
         self.__toggle_button['text'] = 'Hide District Results'
 
     def __hide_district_results(self):
-        coordinates = self.__coordinate_list[self.__current_district]
+        coordinates = self.__get_coordinates()
         contiguous_districts = get_districts_from_coordinates(coordinates)
         for i in range(NUM_DISTRICTS):
             for j in range(NUM_DISTRICTS):
@@ -155,6 +172,13 @@ class App:
                 color = self.__get_district_color(district)
                 self.__canvas.itemconfig(self.__tiles[index], fill=color)
         self.__toggle_button['text'] = 'Show District Results'
+
+    def __get_toggle_button_kwargs(self, button_font):
+        return {
+            'text': 'Show District Results',
+            'command': lambda: self.__toggle_district_results(),
+            'font': button_font
+        }
 
     def __get_next_button_kwargs(self, button_font):
         return {
