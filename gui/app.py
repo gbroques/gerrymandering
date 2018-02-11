@@ -1,10 +1,8 @@
-from coordinates import get_district_winners
 from district_winners import get_election_winner
 from district_winners import get_winning_ratio
-from gui.buttons import AGGREGATE_BUTTON_TEXT
 from gui.buttons import DistrictResultsToggle
 from gui.buttons import PaginationButtons
-from gui.buttons import create_aggregate_button
+from gui.buttons.aggregate_button import AggregateButton
 from gui.canvas import *
 from gui.labels import ElectionWinnerLabel
 from gui.labels import PaginationLabel
@@ -77,8 +75,7 @@ class App:
         self.__pagination_buttons.next.grid(row=3, column=3, sticky=tk.W + tk.E, padx=column_padding)
 
         # Layout fifth row
-        self.__aggregate_button.grid(row=4, columnspan=num_columns, sticky=tk.W + tk.E, pady=(column_padding * 2, 0),
-                                     padx=column_padding)
+        self.__aggregate_button.configure_layout(4, num_columns, column_padding)
 
         # Layout sixth row
         self.__ratio_labels.configure_layout(5, column_padding)
@@ -108,8 +105,14 @@ class App:
         self.__pagination_buttons = PaginationButtons(self.__root,
                                                       self.__pagination_label,
                                                       self.__redraw)
-        self.__aggregate_button = create_aggregate_button(self.__root,
-                                                          self.__toggle_aggregate_results)
+        self.__aggregate_button = AggregateButton(self.__root,
+                                                  self.__canvas,
+                                                  self.__pagination_label,
+                                                  self.__pagination_buttons,
+                                                  self.__election_winner_label,
+                                                  self.__update_winner_text,
+                                                  self.__toggle_button,
+                                                  self.__ratio_labels)
 
     def __get_winning_ratio(self):
         district_winners = self.__get_district_winners()
@@ -135,33 +138,9 @@ class App:
         self.__update_winner_text()
 
     def __get_coordinates(self):
-        """Convenience method for getting the current list of coordinates."""
+        """Convenience method to get the current list of coordinates.
+
+        Based on current page stored in pagination label,
+        updated when user clicks next and previous buttons.
+        """
         return self.__coordinate_list[self.__pagination_label.current_page - 1]
-
-    def __toggle_aggregate_results(self):
-        self.__toggle_aggregate = False if self.__toggle_aggregate else True
-
-        if self.__toggle_aggregate:
-            self.__show_aggregate_results()
-        else:
-            self.__hide_aggregate_results()
-
-    def __show_aggregate_results(self):
-        self.__pagination_label.config(state=tk.DISABLED)
-        self.__canvas.hide_district_grid()
-        self.__pagination_buttons.disable()
-        self.__toggle_button.config(state=tk.DISABLED)
-        self.__election_winner_label.set_text("Aggregate Winning Ratios (Green : Purple)")
-        self.__aggregate_button['text'] = 'Hide ' + AGGREGATE_BUTTON_TEXT
-        self.__ratio_labels.enable()
-        self.__canvas.show_pie_chart()
-
-    def __hide_aggregate_results(self):
-        self.__pagination_label.config(state=tk.NORMAL)
-        self.__canvas.show_district_grid()
-        self.__pagination_buttons.enable()
-        self.__toggle_button.config(state=tk.NORMAL)
-        self.__update_winner_text()
-        self.__aggregate_button['text'] = 'Show ' + AGGREGATE_BUTTON_TEXT
-        self.__ratio_labels.disable()
-        self.__canvas.hide_pie_chart()
