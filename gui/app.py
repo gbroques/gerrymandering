@@ -12,7 +12,11 @@ from gui.labels import PaginationLabel
 from gui.labels import WinningRatioLabels
 from gui.pie_chart import get_pie_chart_percents
 
-TITLE = 'Gerrymandering'
+# Title of GUI window
+_TITLE = 'Gerrymandering'
+
+# Disable resizing of GUI window
+_RESIZEABLE = False
 
 
 class App:
@@ -49,8 +53,8 @@ class App:
     @staticmethod
     def __init_root():
         root = tk.Tk()
-        root.title(TITLE)
-        root.resizable(width=False, height=False)
+        root.title(_TITLE)
+        root.resizable(width=_RESIZEABLE, height=_RESIZEABLE)
         return root
 
     def __layout_grid(self, num_columns):
@@ -78,10 +82,7 @@ class App:
                                      padx=padding)
 
         # Layout sixth row
-        self.__ratio_labels[0].grid(row=5, column=0, sticky=tk.W + tk.E, padx=(padding, padding / 2))
-        self.__ratio_labels[1].grid(row=5, column=1, sticky=tk.W + tk.E, padx=padding / 2)
-        self.__ratio_labels[2].grid(row=5, column=2, sticky=tk.W + tk.E, padx=padding / 2)
-        self.__ratio_labels[3].grid(row=5, column=3, sticky=tk.W + tk.E, padx=(padding / 2, padding))
+        self.__ratio_labels.configure_layout(5, padding)
 
     def __configure_columns(self, num_columns):
         """Configure columns to have equal weights.
@@ -94,9 +95,12 @@ class App:
 
     def __configure_rows(self):
         row_padding = 40
-        self.__root.rowconfigure(0, pad=row_padding)
-        self.__root.rowconfigure(2, pad=row_padding)
-        self.__root.rowconfigure(5, pad=row_padding)
+        for row in self.__rows_with_padding():
+            self.__root.rowconfigure(row, pad=row_padding)
+
+    @staticmethod
+    def __rows_with_padding():
+        return [0, 2, 5]
 
     def __create_buttons(self):
         self.__toggle_button = DistrictResultsToggle(self.__root,
