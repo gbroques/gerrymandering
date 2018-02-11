@@ -4,8 +4,12 @@ from constants import NUM_DISTRICTS
 from coordinates import get_districts_from_coordinates
 from gui.colors import get_district_color
 from gui.pie_chart import PieChart
+from gui.colors import CANVAS_BG_COLOR
+from coordinates import get_district_winners
+from constants import G
+from gui.colors import DISTRICT_RESULTS_GREEN
+from gui.colors import DISTRICT_RESULTS_PURPLE
 
-_BG_COLOR = 'white'
 _DIMENSION = 500
 
 
@@ -21,7 +25,7 @@ class Canvas:
         return tk.Canvas(root,
                          width=_DIMENSION,
                          height=_DIMENSION,
-                         background=_BG_COLOR)
+                         background=CANVAS_BG_COLOR)
 
     def itemconfig(self, tag_or_id, **kwargs):
         self.instance.itemconfig(tag_or_id, kwargs)
@@ -44,6 +48,21 @@ class Canvas:
             color = get_district_color(district)
             self.instance.itemconfig(self.tiles[i], fill=color)
             self.instance.itemconfig(self.district_nums[i], text=district)
+
+    def color_district_grid_by_winner(self, coordinates):
+        districts = get_districts_from_coordinates(coordinates)
+        winners = get_district_winners(coordinates)
+        for i in range(len(districts)):
+            winner = winners[districts[i]]
+            fill = DISTRICT_RESULTS_GREEN if winner == G else DISTRICT_RESULTS_PURPLE
+            self.instance.itemconfig(self.tiles[i], fill=fill)
+
+    def color_district_grid_by_district(self, coordinates):
+        districts = get_districts_from_coordinates(coordinates)
+        for i in range(len(districts)):
+            district = districts[i]
+            fill = get_district_color(district)
+            self.instance.itemconfig(self.tiles[i], fill=fill)
 
     def create_pie_chart(self, num_pieces, percents):
         self.pie_chart = PieChart(num_pieces)

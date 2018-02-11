@@ -6,7 +6,6 @@ from gui.buttons import DistrictResultsToggle
 from gui.buttons import PaginationButtons
 from gui.buttons import create_aggregate_button
 from gui.canvas import *
-from gui.colors import *
 from gui.labels import ElectionWinnerLabel
 from gui.labels import PaginationLabel
 from gui.labels import WinningRatioLabels
