@@ -41,7 +41,6 @@ class AggregateButton:
 
     def __show_aggregate_results(self):
         self.__pagination_label.config(state=DISABLED)
-        self.__canvas.hide_district_grid()
         self.__pagination_buttons.disable()
         self.__toggle_button.config(state=DISABLED)
         self.__election_winner_label.set_text("Aggregate Winning Ratios (Green : Purple)")
@@ -51,13 +50,12 @@ class AggregateButton:
 
     def __hide_aggregate_results(self):
         self.__pagination_label.config(state=NORMAL)
-        self.__canvas.show_district_grid()
         self.__pagination_buttons.enable()
         self.__toggle_button.config(state=NORMAL)
         self.__update_winner_text()
         self.__button['text'] = 'Show ' + AGGREGATE_BUTTON_TEXT
         self.__ratio_labels.disable()
-        self.__canvas.hide_pie_chart()
+        self.__canvas.show_district_grid()
 
     def grid(self, **kwargs):
         self.__button.grid(kwargs)

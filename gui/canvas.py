@@ -69,9 +69,10 @@ class Canvas:
         self.pie_chart.create(self.instance, percents)
 
     def show_pie_chart(self):
+        self.__hide_district_grid()
         self.__set_pie_chart_visibility(True)
 
-    def hide_pie_chart(self):
+    def __hide_pie_chart(self):
         self.__set_pie_chart_visibility(False)
 
     def __set_pie_chart_visibility(self, visible):
@@ -80,9 +81,10 @@ class Canvas:
             self.instance.itemconfig(self.pie_chart.pieces[i], state=state)
 
     def show_district_grid(self):
+        self.__hide_pie_chart()
         self.__set_district_grid_visibility(True)
 
-    def hide_district_grid(self):
+    def __hide_district_grid(self):
         self.__set_district_grid_visibility(False)
 
     def __set_district_grid_visibility(self, visible):
