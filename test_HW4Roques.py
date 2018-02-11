@@ -2,7 +2,7 @@ import unittest
 
 from HW4Roques import find_start_positions
 from HW4Roques import get_contiguous_coordinates
-from HW4Roques import get_district_winners
+from coordinates import get_district_winners
 from HW4Roques import is_district_contiguous
 from HW4Roques import is_grid_contiguous
 

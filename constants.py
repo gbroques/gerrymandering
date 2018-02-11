@@ -12,6 +12,7 @@ NUM_ITERATIONS_TO_PRINT_DOT = 2000000
 NUM_DISTRICTS = 5
 
 # Characters representing each party
+# TODO: Refactor into enum
 P = 'Purple'
 G = 'Green'
 
