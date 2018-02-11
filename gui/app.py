@@ -5,11 +5,11 @@ from gui.buttons import *
 from gui.canvas import *
 from gui.colors import *
 from gui.district_results_toggle import DistrictResultsToggle
-from gui.election_winner_label import ElectionWinnerLabel
-from gui.pagination_label import PaginationLabel
+from gui.labels import ElectionWinnerLabel
+from gui.labels import PaginationLabel
+from gui.labels import WinningRatioLabels
 from gui.pie_chart import PieChart
 from gui.pie_chart import get_pie_chart_percents
-from gui.winning_ratio_labels import WinningRatioLabels
 
 TITLE = 'Gerrymandering'
 

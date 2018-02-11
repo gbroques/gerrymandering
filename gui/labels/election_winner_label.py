@@ -2,7 +2,7 @@ from tkinter import Label
 from tkinter import StringVar
 
 from constants import G
-from gui.styles import LABEL_FONT
+from gui.labels.styles import LABEL_FONT
 
 
 class ElectionWinnerLabel:

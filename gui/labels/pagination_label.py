@@ -1,6 +1,7 @@
-from tkinter import StringVar
 from tkinter import Label
-from gui.styles import LABEL_FONT
+from tkinter import StringVar
+
+from gui.labels.styles import LABEL_FONT
 
 
 class PaginationLabel:

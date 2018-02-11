@@ -1,7 +1,8 @@
-from gui.styles import LABEL_FONT
-from tkinter import Label
-from gui.pie_chart import get_pie_chart_piece_color
 from tkinter import DISABLED
+from tkinter import Label
+
+from gui.labels.styles import LABEL_FONT
+from gui.pie_chart import get_pie_chart_piece_color
 
 
 class WinningRatioLabels:
