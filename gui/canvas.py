@@ -15,13 +15,13 @@ _DIMENSION = 500
 
 class Canvas:
     def __init__(self, root):
-        self.instance = self.init(root)
+        self.instance = self.__init(root)
         self.tiles = self.__get_empty_tiles()
         self.district_nums = self.__get_empty_tiles()
         self.pie_chart = None
 
     @staticmethod
-    def init(root):
+    def __init(root):
         return tk.Canvas(root,
                          width=_DIMENSION,
                          height=_DIMENSION,

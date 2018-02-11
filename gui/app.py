@@ -8,6 +8,7 @@ from gui.labels import ElectionWinnerLabel
 from gui.labels import PaginationLabel
 from gui.labels import WinningRatioLabels
 from gui.pie_chart import get_pie_chart_percents
+from gui.layout_manager import LayoutManager
 
 # Title of GUI window
 _TITLE = 'Gerrymandering'
@@ -17,35 +18,17 @@ _RESIZEABLE = False
 
 
 class App:
-    __toggle_aggregate = False
-
     def __init__(self, coordinate_list, winning_ratios):
         self.__coordinate_list = coordinate_list
         self.__winning_ratios = winning_ratios
+
         self.__root = self.__init_root()
-        self.__ratio_labels = WinningRatioLabels(self.__root, list(winning_ratios.keys()))
-        self.__canvas = Canvas(self.__root)
-        self.__pagination_label = PaginationLabel(self.__root, len(coordinate_list))
-        self.__canvas.create_district_grid(self.__get_coordinates())
-
-        num_winning_ratios = len(winning_ratios.keys())
-        percents = get_pie_chart_percents(self.__winning_ratios, len(coordinate_list))
-        self.__canvas.create_pie_chart(num_winning_ratios, percents)
-
-        election_winner_and_ratio = self.get_election_winner_and_ratio()
-        self.__election_winner_label = ElectionWinnerLabel(self.__root, *election_winner_and_ratio)
-
+        self.__pagination_label = self.__get_pagination_label()
+        self.__canvas = self.__setup_canvas()
+        self.__election_winner_label = self.get_election_winner_label()
+        self.__ratio_labels = self.__get_winning_ratio_labels()
         self.__create_buttons()
-
-        self.__layout_grid(num_winning_ratios)
-
-    def get_election_winner_and_ratio(self):
-        election_winner = self.__get_election_winner()
-        winning_ratio = self.__get_winning_ratio()
-        return election_winner, winning_ratio
-
-    def run_mainloop(self):
-        self.__root.mainloop()
+        self.__layout_manager = self.__setup_layout_manager()
 
     @staticmethod
     def __init_root():
@@ -54,65 +37,76 @@ class App:
         root.resizable(width=_RESIZEABLE, height=_RESIZEABLE)
         return root
 
-    def __layout_grid(self, num_columns):
-        self.__configure_columns(num_columns)
-        self.__configure_rows()
+    def __get_pagination_label(self):
+        return PaginationLabel(self.__root, len(self.__coordinate_list))
 
-        column_padding = 10
+    def __setup_canvas(self):
+        canvas = Canvas(self.__root)
+        canvas.create_district_grid(self.__get_coordinates())
+        num_pieces_and_percents = self.__get_num_pieces_and_percents()
+        canvas.create_pie_chart(*num_pieces_and_percents)
+        return canvas
 
-        # Layout first row
-        self.__pagination_label.grid(row=0, columnspan=num_columns)
-
-        # Layout second row
-        self.__canvas.instance.grid(row=1, columnspan=num_columns, padx=column_padding)
-
-        # Layout third row
-        self.__election_winner_label.grid(row=2, columnspan=num_columns, sticky=tk.W + tk.E)
-
-        # Layout fourth row
-        self.__pagination_buttons.prev.grid(row=3, column=0, sticky=tk.W + tk.E, padx=column_padding)
-        self.__toggle_button.grid(row=3, column=1, columnspan=2, sticky=tk.W + tk.E)
-        self.__pagination_buttons.next.grid(row=3, column=3, sticky=tk.W + tk.E, padx=column_padding)
-
-        # Layout fifth row
-        self.__aggregate_button.configure_layout(4, num_columns, column_padding)
-
-        # Layout sixth row
-        self.__ratio_labels.configure_layout(5, column_padding)
-
-    def __configure_columns(self, num_columns):
-        """Configure columns to have equal weights.
-
-        Add uniform group to make columns equal widths.
-        """
-        group = 'group'
-        for i in range(num_columns):
-            self.__root.columnconfigure(i, weight=1, uniform=group)
-
-    def __configure_rows(self):
-        row_padding = 40
-        for row in self.__rows_with_padding():
-            self.__root.rowconfigure(row, pad=row_padding)
-
-    @staticmethod
-    def __rows_with_padding():
-        return [0, 2, 5]
+    def get_election_winner_label(self):
+        election_winner_and_ratio = self.get_election_winner_and_ratio()
+        return ElectionWinnerLabel(self.__root, *election_winner_and_ratio)
 
     def __create_buttons(self):
-        self.__toggle_button = DistrictResultsToggle(self.__root,
-                                                     self.__canvas,
-                                                     self.__get_coordinates())
-        self.__pagination_buttons = PaginationButtons(self.__root,
-                                                      self.__pagination_label,
-                                                      self.__redraw)
-        self.__aggregate_button = AggregateButton(self.__root,
-                                                  self.__canvas,
-                                                  self.__pagination_label,
-                                                  self.__pagination_buttons,
-                                                  self.__election_winner_label,
-                                                  self.__update_winner_text,
-                                                  self.__toggle_button,
-                                                  self.__ratio_labels)
+        self.__toggle_button = self.__get_toggle_button()
+        self.__pagination_buttons = self.__get_pagination_buttons()
+        self.__aggregate_button = self.__get_aggregate_button()
+
+    def __get_toggle_button(self):
+        return DistrictResultsToggle(self.__root,
+                                     self.__canvas,
+                                     self.__get_coordinates())
+
+    def __get_pagination_buttons(self):
+        return PaginationButtons(self.__root,
+                                 self.__pagination_label,
+                                 self.__redraw)
+
+    def __get_aggregate_button(self):
+        return AggregateButton(self.__root,
+                               self.__canvas,
+                               self.__pagination_label,
+                               self.__pagination_buttons,
+                               self.__election_winner_label,
+                               self.__update_winner_text,
+                               self.__toggle_button,
+                               self.__ratio_labels)
+
+    def __get_winning_ratio_labels(self):
+        return WinningRatioLabels(self.__root, list(self.__winning_ratios.keys()))
+
+    def __setup_layout_manager(self):
+        layout_manager = self.__get_layout_manager()
+        num_columns = len(self.__winning_ratios.keys())
+        layout_manager.configure(num_columns)
+        return layout_manager
+
+    def __get_layout_manager(self):
+        return LayoutManager(self.__root,
+                             self.__pagination_label,
+                             self.__canvas,
+                             self.__election_winner_label,
+                             self.__pagination_buttons,
+                             self.__toggle_button,
+                             self.__aggregate_button,
+                             self.__ratio_labels)
+
+    def __get_num_pieces_and_percents(self):
+        num_pieces = len(self.__winning_ratios.keys())
+        percents = get_pie_chart_percents(self.__winning_ratios, len(self.__coordinate_list))
+        return num_pieces, percents
+
+    def get_election_winner_and_ratio(self):
+        election_winner = self.__get_election_winner()
+        winning_ratio = self.__get_winning_ratio()
+        return election_winner, winning_ratio
+
+    def run_mainloop(self):
+        self.__root.mainloop()
 
     def __get_winning_ratio(self):
         district_winners = self.__get_district_winners()
