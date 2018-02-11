@@ -10,13 +10,13 @@ from gui.pagination_label import PaginationLabel
 from gui.pie_chart import PieChart
 from gui.pie_chart import get_pie_chart_percents
 from gui.winning_ratio_labels import WinningRatioLabels
+from gui.district_results_toggle import DistrictResultsToggle
 
 TITLE = 'Gerrymandering'
 
 
 class App:
     __current_district = 0
-    __toggle_results = False
     __toggle_aggregate = False
 
     def __init__(self, coordinate_list, winning_ratios):
@@ -144,48 +144,13 @@ class App:
                 color = get_district_color(district)
                 self.__canvas.itemconfig(self.__canvas.tiles[index], fill=color)
                 self.__canvas.itemconfig(self.__canvas.district_nums[index], text=district)
-                self.__toggle_results = False
-                self.__toggle_button['text'] = 'Show ' + TOGGLE_BUTTON_TEXT
+                self.__toggle_button.reset()
+                self.__toggle_button.set_coordinates(coordinates)
                 self.__update_winner_text()
 
     def __get_coordinates(self):
         """Convenience method for getting the current list of coordinates."""
         return self.__coordinate_list[self.__current_district]
-
-    # TODO: Refactor toggle button into separate class
-    def __toggle_district_results(self):
-        self.__toggle_results = False if self.__toggle_results else True
-        if self.__toggle_results:
-            self.__show_district_results()
-        else:
-            self.__hide_district_results()
-
-    def __show_district_results(self):
-        coordinates = self.__get_coordinates()
-        districts = get_districts_from_coordinates(coordinates)
-        winners = get_district_winners(coordinates)
-        for i in range(NUM_DISTRICTS):
-            for j in range(NUM_DISTRICTS):
-                index = i * NUM_DISTRICTS + j
-                winner = winners[districts[index]]
-                if winner == G:
-                    fill = 'lime'
-                else:
-                    fill = 'magenta'
-
-                self.__canvas.itemconfig(self.__canvas.tiles[index], fill=fill)
-        self.__toggle_button['text'] = 'Hide ' + TOGGLE_BUTTON_TEXT
-
-    def __hide_district_results(self):
-        coordinates = self.__get_coordinates()
-        districts = get_districts_from_coordinates(coordinates)
-        for i in range(NUM_DISTRICTS):
-            for j in range(NUM_DISTRICTS):
-                index = i * NUM_DISTRICTS + j
-                district = districts[index]
-                color = get_district_color(district)
-                self.__canvas.itemconfig(self.__canvas.tiles[index], fill=color)
-        self.__toggle_button['text'] = 'Show ' + TOGGLE_BUTTON_TEXT
 
     def __toggle_aggregate_results(self):
         self.__toggle_aggregate = False if self.__toggle_aggregate else True
@@ -225,8 +190,7 @@ class App:
             self.__ratio_labels[i].config(state=tk.DISABLED)
 
     def __create_buttons(self):
-        self.__toggle_button = create_toggle_button(self.__root,
-                                                    self.__toggle_district_results)
+        self.__toggle_button = DistrictResultsToggle(self.__root, self.__canvas, self.__get_coordinates())
         self.__next_button = create_next_button(self.__root,
                                                 self.__handle_next)
         self.__prev_button = create_prev_button(self.__root,
