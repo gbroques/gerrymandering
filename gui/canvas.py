@@ -74,4 +74,3 @@ class Canvas:
             'text': district,
             'font': ('Helvetica', 28)
         }
-
