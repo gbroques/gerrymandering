@@ -1,14 +1,15 @@
 from coordinates import get_district_winners
 from district_winners import get_election_winner
 from district_winners import get_winning_ratio
-from gui.buttons import *
+from gui.buttons import AGGREGATE_BUTTON_TEXT
+from gui.buttons import DistrictResultsToggle
+from gui.buttons import PaginationButtons
+from gui.buttons import create_aggregate_button
 from gui.canvas import *
 from gui.colors import *
-from gui.district_results_toggle import DistrictResultsToggle
 from gui.labels import ElectionWinnerLabel
 from gui.labels import PaginationLabel
 from gui.labels import WinningRatioLabels
-from gui.pagination_buttons import PaginationButtons
 from gui.pie_chart import get_pie_chart_percents
 
 TITLE = 'Gerrymandering'

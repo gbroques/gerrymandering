@@ -1,8 +1,8 @@
 from constants import G
 from coordinates import get_district_winners
 from coordinates import get_districts_from_coordinates
-from gui.buttons import TOGGLE_BUTTON_TEXT
-from gui.buttons import create_toggle_button
+from gui.buttons.buttons import TOGGLE_BUTTON_TEXT
+from gui.buttons.buttons import create_toggle_button
 from gui.colors import get_district_color
 
 

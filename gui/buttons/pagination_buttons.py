@@ -1,8 +1,8 @@
 from tkinter import DISABLED
 from tkinter import NORMAL
 
-from gui.buttons import create_next_button
-from gui.buttons import create_prev_button
+from gui.buttons.buttons import create_next_button
+from gui.buttons.buttons import create_prev_button
 
 
 class PaginationButtons:
