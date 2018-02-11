@@ -24,12 +24,11 @@ class App:
         self.__root = self.__init_root()
         self.__ratio_labels = WinningRatioLabels(self.__root, list(winning_ratios.keys()))
         self.__canvas = Canvas(self.__root)
-        self.__canvas.draw(self.__get_coordinates())
+        self.__canvas.draw_district_grid(self.__get_coordinates())
 
         num_winning_ratios = len(winning_ratios.keys())
-        self.__pie_chart = PieChart(num_winning_ratios)
         percents = get_pie_chart_percents(self.__winning_ratios, len(coordinate_list))
-        self.__pie_chart.draw(self.__canvas.instance, percents)
+        self.__canvas.draw_pie_chart(num_winning_ratios, percents)
 
         election_winner_and_ratio = self.get_election_winner_and_ratio()
         self.__election_winner_label = ElectionWinnerLabel(self.__root, *election_winner_and_ratio)
@@ -182,9 +181,9 @@ class App:
         self.__toggle_button.config(state=tk.DISABLED)
         self.__election_winner_label.set_text("Aggregate Winning Ratios (Green : Purple)")
         self.__aggregate_button['text'] = 'Hide ' + AGGREGATE_BUTTON_TEXT
-        for i in range(self.__pie_chart.num_pieces):
-            self.__canvas.itemconfig(self.__pie_chart.pieces[i], state=tk.NORMAL)
+        for i in range(self.__ratio_labels.length):
             self.__ratio_labels[i].config(state=tk.ACTIVE)
+        self.__canvas.show_pie_chart()
 
     def __hide_aggregate_results(self):
         self.__pagination_label.config(state=tk.NORMAL)
@@ -194,6 +193,6 @@ class App:
         self.__toggle_button.config(state=tk.NORMAL)
         self.__update_winner_text()
         self.__aggregate_button['text'] = 'Show ' + AGGREGATE_BUTTON_TEXT
-        for i in range(self.__pie_chart.num_pieces):
-            self.__canvas.itemconfig(self.__pie_chart.pieces[i], state=tk.HIDDEN)
+        for i in range(self.__ratio_labels.length):
             self.__ratio_labels[i].config(state=tk.DISABLED)
+        self.__canvas.hide_pie_chart()

@@ -3,6 +3,7 @@ import tkinter as tk
 from constants import NUM_DISTRICTS
 from coordinates import get_districts_from_coordinates
 from gui.colors import get_district_color
+from gui.pie_chart import PieChart
 
 _BG_COLOR = 'white'
 _DIMENSION = 500
@@ -13,6 +14,7 @@ class Canvas:
         self.instance = self.init(root)
         self.tiles = self.__get_empty_tiles()
         self.district_nums = self.__get_empty_tiles()
+        self.pie_chart = None
 
     @staticmethod
     def init(root):
@@ -24,7 +26,7 @@ class Canvas:
     def itemconfig(self, tag_or_id, **kwargs):
         self.instance.itemconfig(tag_or_id, kwargs)
 
-    def draw(self, coordinates):
+    def draw_district_grid(self, coordinates):
         districts = get_districts_from_coordinates(coordinates)
 
         for i in range(NUM_DISTRICTS):
@@ -34,14 +36,29 @@ class Canvas:
                 self.tiles[index] = self.__create_tile(district, i, j)
                 self.district_nums[index] = self.__create_district_num(district, i, j)
 
+    def draw_pie_chart(self, num_pieces, percents):
+        self.pie_chart = PieChart(num_pieces)
+        self.pie_chart.draw(self.instance, percents)
+
+    def show_pie_chart(self):
+        self.__set_pie_chart_visibility(True)
+
+    def hide_pie_chart(self):
+        self.__set_pie_chart_visibility(False)
+
+    def __set_pie_chart_visibility(self, visible):
+        state = self.get_visible_state(visible)
+        for i in range(self.pie_chart.num_pieces):
+            self.instance.itemconfig(self.pie_chart.pieces[i], state=state)
+
     def show_district_grid(self):
-        self.set_district_grid_visibility(True)
+        self.__set_district_grid_visibility(True)
 
     def hide_district_grid(self):
-        self.set_district_grid_visibility(False)
+        self.__set_district_grid_visibility(False)
 
-    def set_district_grid_visibility(self, visible):
-        state = tk.NORMAL if visible else tk.HIDDEN
+    def __set_district_grid_visibility(self, visible):
+        state = self.get_visible_state(visible)
         for i in range(NUM_DISTRICTS * NUM_DISTRICTS):
             self.instance.itemconfig(self.tiles[i], state=state)
             self.instance.itemconfig(self.district_nums[i], state=state)
@@ -87,3 +104,6 @@ class Canvas:
     def __get_tile_size():
         return _DIMENSION / NUM_DISTRICTS
 
+    @staticmethod
+    def get_visible_state(visible):
+        return tk.NORMAL if visible else tk.HIDDEN
