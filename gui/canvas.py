@@ -26,7 +26,7 @@ class Canvas:
     def itemconfig(self, tag_or_id, **kwargs):
         self.instance.itemconfig(tag_or_id, kwargs)
 
-    def draw_district_grid(self, coordinates):
+    def create_district_grid(self, coordinates):
         districts = get_districts_from_coordinates(coordinates)
 
         for i in range(NUM_DISTRICTS):
@@ -36,9 +36,18 @@ class Canvas:
                 self.tiles[index] = self.__create_tile(district, i, j)
                 self.district_nums[index] = self.__create_district_num(district, i, j)
 
-    def draw_pie_chart(self, num_pieces, percents):
+    def draw_district_grid(self, coordinates):
+        districts = get_districts_from_coordinates(coordinates)
+
+        for i in range(len(districts)):
+            district = districts[i]
+            color = get_district_color(district)
+            self.instance.itemconfig(self.tiles[i], fill=color)
+            self.instance.itemconfig(self.district_nums[i], text=district)
+
+    def create_pie_chart(self, num_pieces, percents):
         self.pie_chart = PieChart(num_pieces)
-        self.pie_chart.draw(self.instance, percents)
+        self.pie_chart.create(self.instance, percents)
 
     def show_pie_chart(self):
         self.__set_pie_chart_visibility(True)

@@ -9,7 +9,7 @@ class PieChart:
         self.num_pieces = num_pieces
         self.pieces = [None for _ in range(num_pieces)]
 
-    def draw(self, canvas, percents):
+    def create(self, canvas, percents):
         coordinates = (100, 100, 400, 400)
         start_arc = 0
         for i in range(self.num_pieces):

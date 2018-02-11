@@ -29,11 +29,11 @@ class App:
         self.__ratio_labels = WinningRatioLabels(self.__root, list(winning_ratios.keys()))
         self.__canvas = Canvas(self.__root)
         self.__pagination_label = PaginationLabel(self.__root, len(coordinate_list))
-        self.__canvas.draw_district_grid(self.__get_coordinates())
+        self.__canvas.create_district_grid(self.__get_coordinates())
 
         num_winning_ratios = len(winning_ratios.keys())
         percents = get_pie_chart_percents(self.__winning_ratios, len(coordinate_list))
-        self.__canvas.draw_pie_chart(num_winning_ratios, percents)
+        self.__canvas.create_pie_chart(num_winning_ratios, percents)
 
         election_winner_and_ratio = self.get_election_winner_and_ratio()
         self.__election_winner_label = ElectionWinnerLabel(self.__root, *election_winner_and_ratio)
@@ -61,28 +61,28 @@ class App:
         self.__configure_columns(num_columns)
         self.__configure_rows()
 
-        padding = 10
+        column_padding = 10
 
         # Layout first row
         self.__pagination_label.grid(row=0, columnspan=num_columns)
 
         # Layout second row
-        self.__canvas.instance.grid(row=1, columnspan=num_columns, padx=padding)
+        self.__canvas.instance.grid(row=1, columnspan=num_columns, padx=column_padding)
 
         # Layout third row
         self.__election_winner_label.grid(row=2, columnspan=num_columns, sticky=tk.W + tk.E)
 
         # Layout fourth row
-        self.__pagination_buttons.prev.grid(row=3, column=0, sticky=tk.W + tk.E, padx=padding)
+        self.__pagination_buttons.prev.grid(row=3, column=0, sticky=tk.W + tk.E, padx=column_padding)
         self.__toggle_button.grid(row=3, column=1, columnspan=2, sticky=tk.W + tk.E)
-        self.__pagination_buttons.next.grid(row=3, column=3, sticky=tk.W + tk.E, padx=padding)
+        self.__pagination_buttons.next.grid(row=3, column=3, sticky=tk.W + tk.E, padx=column_padding)
 
         # Layout fifth row
-        self.__aggregate_button.grid(row=4, columnspan=num_columns, sticky=tk.W + tk.E, pady=(padding * 2, 0),
-                                     padx=padding)
+        self.__aggregate_button.grid(row=4, columnspan=num_columns, sticky=tk.W + tk.E, pady=(column_padding * 2, 0),
+                                     padx=column_padding)
 
         # Layout sixth row
-        self.__ratio_labels.configure_layout(5, padding)
+        self.__ratio_labels.configure_layout(5, column_padding)
 
     def __configure_columns(self, num_columns):
         """Configure columns to have equal weights.
@@ -116,15 +116,14 @@ class App:
         district_winners = self.__get_district_winners()
         return get_winning_ratio(district_winners)
 
+    def __get_election_winner(self):
+        district_winners = self.__get_district_winners()
+        return get_election_winner(district_winners)
+
     def __get_district_winners(self):
         coordinates = self.__get_coordinates()
         district_winners = get_district_winners(coordinates)
         return district_winners
-
-    def __get_election_winner(self):
-        district_winners = self.__get_district_winners()
-        election_winner = get_election_winner(district_winners)
-        return election_winner
 
     def __update_winner_text(self):
         election_winner_and_ratio = self.get_election_winner_and_ratio()
@@ -132,15 +131,9 @@ class App:
 
     def __redraw(self):
         coordinates = self.__get_coordinates()
-        districts = get_districts_from_coordinates(coordinates)
-        for i in range(len(districts)):
-            district = districts[i]
-            color = get_district_color(district)
-            self.__canvas.itemconfig(self.__canvas.tiles[i], fill=color)
-            self.__canvas.itemconfig(self.__canvas.district_nums[i], text=district)
-            self.__toggle_button.reset()
-            self.__toggle_button.set_coordinates(coordinates)
-            self.__update_winner_text()
+        self.__canvas.draw_district_grid(coordinates)
+        self.__toggle_button.reset(coordinates)
+        self.__update_winner_text()
 
     def __get_coordinates(self):
         """Convenience method for getting the current list of coordinates."""

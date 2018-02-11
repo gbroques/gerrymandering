@@ -14,10 +14,8 @@ class DistrictResultsToggle:
         self.__button = create_toggle_button(root,
                                              lambda: self.__toggle_district_results(canvas))
 
-    def set_coordinates(self, coordinates):
+    def reset(self, coordinates):
         self.__coordinates = coordinates
-
-    def reset(self):
         self.__toggle_results = False
         self.__button['text'] = 'Show ' + TOGGLE_BUTTON_TEXT
 
