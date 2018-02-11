@@ -26,16 +26,23 @@ Description:
 """
 
 import sys
-from itertools import product
 from random import shuffle
 
-from constants import *
+from constants import G
+from constants import NUM_DISTRICTS
+from constants import NUM_REDISTRICTING_SCHEMES
+from constants import P
+from contiguous_data import get_contiguous_coordinates
+from contiguous_data import get_second_contiguous_coordinates
 from coordinates import from_coordinates_to_grid
 from coordinates import get_district_winners
-from district_winners import *
+from district_winners import get_election_winner
+from district_winners import get_winning_ratio
 from gui import App
 from statistics import print_statistics
-from util import *
+from util import get_border
+from util import get_voter_map
+from util import print_to_screen_and_file
 
 # Name of output file
 OUTPUT_FILE = "HW4output.txt"
@@ -99,12 +106,13 @@ def main():
 
     print_statistics(text_file, num_wins, winning_ratios, num_contiguous)
 
-    print("\nStatistics report generated. See file '" + OUTPUT_FILE + "'.")
+    print_output_file_generated_message()
 
     text_file.close()
 
-    app = App(contiguous_coordinates, winning_ratios)
-    app.run_mainloop()
+    # Run GUI application
+    gui = App(contiguous_coordinates, winning_ratios)
+    gui.run_mainloop()
 
 
 def get_winning_ratios():
@@ -144,30 +152,6 @@ def make_district_grid(district_grid, coordinates):
         district_grid[x][y] = district
         if i % NUM_DISTRICTS == 0:
             district += 1
-
-
-def get_contiguous_coordinates():
-    """Get a list of coordinates to construct a contiguous redistricting scheme.
-
-    First five elements comprise district 1,
-    next five elements comprise district 2,
-    and so on.
-    """
-    return [(0, 0), (1, 1), (1, 2), (2, 2), (3, 2),
-            (0, 1), (1, 0), (2, 0), (2, 1), (3, 1),
-            (3, 0), (4, 0), (4, 1), (4, 2), (3, 3),
-            (0, 2), (0, 3), (0, 4), (1, 4), (2, 4),
-            (1, 3), (2, 3), (3, 4), (4, 4), (4, 3)]
-
-
-def get_second_contiguous_coordinates():
-    """Get a list of coordinates to construct a contiguous redistricting scheme.
-
-    First five elements comprise district 1,
-    next five elements comprise district 2,
-    and so on.
-    """
-    return list(product(range(NUM_DISTRICTS), repeat=2))
 
 
 def is_grid_contiguous(grid):
@@ -257,6 +241,10 @@ def print_legend(text_file):
     print_to_screen_and_file('LEGEND', text_file)
     print_to_screen_and_file('  G - Green', text_file)
     print_to_screen_and_file('  P - Purple\n', text_file)
+
+
+def print_output_file_generated_message():
+    print("\nStatistics report generated. See file '" + OUTPUT_FILE + "'.")
 
 
 if __name__ == '__main__':
