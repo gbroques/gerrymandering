@@ -3,6 +3,7 @@ from tkinter import Label
 
 from gui.labels.styles import LABEL_FONT
 from gui.pie_chart import get_pie_chart_piece_color
+from tkinter import ACTIVE
 
 
 class WinningRatioLabels:
@@ -21,6 +22,17 @@ class WinningRatioLabels:
             kwargs = self.__get_kwargs(winning_ratios[i], get_pie_chart_piece_color(i))
             self.__labels[i] = Label(root, **kwargs)
 
+    def __toggle_state(self, enabled):
+        state = ACTIVE if enabled else DISABLED
+        for i in range(self.length):
+            self.__labels[i].config(state=state)
+
+    def disable(self):
+        self.__toggle_state(False)
+
+    def enable(self):
+        self.__toggle_state(True)
+
     @staticmethod
     def __get_kwargs(text, activebackground):
         return {
@@ -32,4 +44,3 @@ class WinningRatioLabels:
 
     def __getitem__(self, key):
         return self.__labels[key]
-

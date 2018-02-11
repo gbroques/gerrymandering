@@ -157,8 +157,7 @@ class App:
         self.__toggle_button.config(state=tk.DISABLED)
         self.__election_winner_label.set_text("Aggregate Winning Ratios (Green : Purple)")
         self.__aggregate_button['text'] = 'Hide ' + AGGREGATE_BUTTON_TEXT
-        for i in range(self.__ratio_labels.length):
-            self.__ratio_labels[i].config(state=tk.ACTIVE)
+        self.__ratio_labels.enable()
         self.__canvas.show_pie_chart()
 
     def __hide_aggregate_results(self):
@@ -168,6 +167,5 @@ class App:
         self.__toggle_button.config(state=tk.NORMAL)
         self.__update_winner_text()
         self.__aggregate_button['text'] = 'Show ' + AGGREGATE_BUTTON_TEXT
-        for i in range(self.__ratio_labels.length):
-            self.__ratio_labels[i].config(state=tk.DISABLED)
+        self.__ratio_labels.disable()
         self.__canvas.hide_pie_chart()
