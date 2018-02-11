@@ -38,8 +38,8 @@ from output_printer import OutputPrinter
 
 
 def main():
-    # Initialize map of zeros
-    district_grid = [[0] * NUM_DISTRICTS for _ in range(NUM_DISTRICTS)]
+    # Initialize grid of zeros
+    district_grid = initialize_district_grid(0)
 
     # Start with a list of contiguous coordinates,
     # so that there's at least 1 contiguous redistricting scheme
@@ -67,6 +67,10 @@ def main():
     # Run GUI application
     gui = App(contiguous_coordinate_list, output_printer.winning_ratios)
     gui.run_mainloop()
+
+
+def initialize_district_grid(initial_value):
+    return [[initial_value] * NUM_DISTRICTS for _ in range(NUM_DISTRICTS)]
 
 
 def redistrict_grid(district_grid, coordinates):
@@ -133,6 +137,7 @@ def find_start_positions(grid):
     TODO: Refactor to get start positions from the list of coordinates,
           rather than grid to improve performance.
 
+    :param grid: Grid of districts.
     :return: A dictionary where the keys are districts,
              and the values are tuples representing an (x, y) coordinate.
     """
