@@ -8,14 +8,13 @@ from gui.district_results_toggle import DistrictResultsToggle
 from gui.labels import ElectionWinnerLabel
 from gui.labels import PaginationLabel
 from gui.labels import WinningRatioLabels
-from gui.pie_chart import PieChart
+from gui.pagination_buttons import PaginationButtons
 from gui.pie_chart import get_pie_chart_percents
 
 TITLE = 'Gerrymandering'
 
 
 class App:
-    __current_district = 0
     __toggle_aggregate = False
 
     def __init__(self, coordinate_list, winning_ratios):
@@ -24,6 +23,7 @@ class App:
         self.__root = self.__init_root()
         self.__ratio_labels = WinningRatioLabels(self.__root, list(winning_ratios.keys()))
         self.__canvas = Canvas(self.__root)
+        self.__pagination_label = PaginationLabel(self.__root, len(coordinate_list))
         self.__canvas.draw_district_grid(self.__get_coordinates())
 
         num_winning_ratios = len(winning_ratios.keys())
@@ -32,8 +32,6 @@ class App:
 
         election_winner_and_ratio = self.get_election_winner_and_ratio()
         self.__election_winner_label = ElectionWinnerLabel(self.__root, *election_winner_and_ratio)
-
-        self.__pagination_label = PaginationLabel(self.__root, len(coordinate_list))
 
         self.__create_buttons()
 
@@ -70,9 +68,9 @@ class App:
         self.__election_winner_label.grid(row=2, columnspan=num_columns, sticky=tk.W + tk.E)
 
         # Layout fourth row
-        self.__prev_button.grid(row=3, column=0, sticky=tk.W + tk.E, padx=padding)
+        self.__pagination_buttons.prev.grid(row=3, column=0, sticky=tk.W + tk.E, padx=padding)
         self.__toggle_button.grid(row=3, column=1, columnspan=2, sticky=tk.W + tk.E)
-        self.__next_button.grid(row=3, column=3, sticky=tk.W + tk.E, padx=padding)
+        self.__pagination_buttons.next.grid(row=3, column=3, sticky=tk.W + tk.E, padx=padding)
 
         # Layout fifth row
         self.__aggregate_button.grid(row=4, columnspan=num_columns, sticky=tk.W + tk.E, pady=(padding * 2, 0),
@@ -103,10 +101,9 @@ class App:
         self.__toggle_button = DistrictResultsToggle(self.__root,
                                                      self.__canvas,
                                                      self.__get_coordinates())
-        self.__next_button = create_next_button(self.__root,
-                                                self.__handle_next)
-        self.__prev_button = create_prev_button(self.__root,
-                                                self.__handle_prev)
+        self.__pagination_buttons = PaginationButtons(self.__root,
+                                                      self.__pagination_label,
+                                                      self.__redraw)
         self.__aggregate_button = create_aggregate_button(self.__root,
                                                           self.__toggle_aggregate_results)
 
@@ -128,27 +125,6 @@ class App:
         election_winner_and_ratio = self.get_election_winner_and_ratio()
         self.__election_winner_label.set_election_winner(*election_winner_and_ratio)
 
-    def __handle_next(self):
-        self.__current_district += 1
-        self.__prev_button.config(state=tk.NORMAL)
-        self.__next_button.config(state=self.__is_next_button_enabled())
-        self.__redraw()
-        self.__pagination_label.next()
-
-    def __handle_prev(self):
-        self.__current_district -= 1
-        self.__prev_button.config(state=self.__is_prev_button_enabled())
-        self.__next_button.config(state=self.__is_next_button_enabled())
-        self.__redraw()
-        self.__pagination_label.prev()
-
-    def __is_prev_button_enabled(self):
-        return DISABLED if self.__current_district == 0 else tk.NORMAL
-
-    def __is_next_button_enabled(self):
-        num_coordinates = len(self.__coordinate_list)
-        return DISABLED if self.__current_district == (num_coordinates - 1) else tk.NORMAL
-
     def __redraw(self):
         coordinates = self.__get_coordinates()
         districts = get_districts_from_coordinates(coordinates)
@@ -163,7 +139,7 @@ class App:
 
     def __get_coordinates(self):
         """Convenience method for getting the current list of coordinates."""
-        return self.__coordinate_list[self.__current_district]
+        return self.__coordinate_list[self.__pagination_label.current_page - 1]
 
     def __toggle_aggregate_results(self):
         self.__toggle_aggregate = False if self.__toggle_aggregate else True
@@ -176,8 +152,7 @@ class App:
     def __show_aggregate_results(self):
         self.__pagination_label.config(state=tk.DISABLED)
         self.__canvas.hide_district_grid()
-        self.__next_button.config(state=tk.DISABLED)
-        self.__prev_button.config(state=tk.DISABLED)
+        self.__pagination_buttons.disable()
         self.__toggle_button.config(state=tk.DISABLED)
         self.__election_winner_label.set_text("Aggregate Winning Ratios (Green : Purple)")
         self.__aggregate_button['text'] = 'Hide ' + AGGREGATE_BUTTON_TEXT
@@ -188,8 +163,7 @@ class App:
     def __hide_aggregate_results(self):
         self.__pagination_label.config(state=tk.NORMAL)
         self.__canvas.show_district_grid()
-        self.__next_button.config(state=self.__is_next_button_enabled())
-        self.__prev_button.config(state=self.__is_prev_button_enabled())
+        self.__pagination_buttons.enable()
         self.__toggle_button.config(state=tk.NORMAL)
         self.__update_winner_text()
         self.__aggregate_button['text'] = 'Show ' + AGGREGATE_BUTTON_TEXT

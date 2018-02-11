@@ -32,6 +32,9 @@ class PaginationLabel:
         self.current_page -= 1
         self.__pagination_text.set(self.__get_pagination_text())
 
+    def is_last_page(self):
+        return self.current_page == self.total_pages
+
     def __get_label_kwargs(self):
         return {
             'textvariable': self.__pagination_text,
