@@ -37,7 +37,7 @@ class App:
 
         self.__create_buttons()
 
-        self.__init_grid_layout(num_winning_ratios)
+        self.__layout_grid(num_winning_ratios)
 
     def get_election_winner_and_ratio(self):
         election_winner = self.__get_election_winner()
@@ -54,7 +54,7 @@ class App:
         root.resizable(width=False, height=False)
         return root
 
-    def __init_grid_layout(self, num_columns):
+    def __layout_grid(self, num_columns):
         self.__configure_columns(num_columns)
         self.__configure_rows()
 
@@ -85,6 +85,10 @@ class App:
         self.__ratio_labels[3].grid(row=5, column=3, sticky=tk.W + tk.E, padx=(padding / 2, padding))
 
     def __configure_columns(self, num_columns):
+        """Configure columns to have equal weights.
+
+        Add uniform group to make columns equal widths.
+        """
         group = 'group'
         for i in range(num_columns):
             self.__root.columnconfigure(i, weight=1, uniform=group)
@@ -94,6 +98,17 @@ class App:
         self.__root.rowconfigure(0, pad=row_padding)
         self.__root.rowconfigure(2, pad=row_padding)
         self.__root.rowconfigure(5, pad=row_padding)
+
+    def __create_buttons(self):
+        self.__toggle_button = DistrictResultsToggle(self.__root,
+                                                     self.__canvas,
+                                                     self.__get_coordinates())
+        self.__next_button = create_next_button(self.__root,
+                                                self.__handle_next)
+        self.__prev_button = create_prev_button(self.__root,
+                                                self.__handle_prev)
+        self.__aggregate_button = create_aggregate_button(self.__root,
+                                                          self.__toggle_aggregate_results)
 
     def __get_winning_ratio(self):
         district_winners = self.__get_district_winners()
@@ -137,19 +152,18 @@ class App:
     def __redraw(self):
         coordinates = self.__get_coordinates()
         districts = get_districts_from_coordinates(coordinates)
-        for i in range(NUM_DISTRICTS):
-            for j in range(NUM_DISTRICTS):
-                index = i * NUM_DISTRICTS + j
-                district = districts[index]
-                color = get_district_color(district)
-                self.__canvas.itemconfig(self.__canvas.tiles[index], fill=color)
-                self.__canvas.itemconfig(self.__canvas.district_nums[index], text=district)
-                self.__toggle_button.reset()
-                self.__toggle_button.set_coordinates(coordinates)
-                self.__update_winner_text()
+        for i in range(len(districts)):
+            district = districts[i]
+            color = get_district_color(district)
+            self.__canvas.itemconfig(self.__canvas.tiles[i], fill=color)
+            self.__canvas.itemconfig(self.__canvas.district_nums[i], text=district)
+            self.__toggle_button.reset()
+            self.__toggle_button.set_coordinates(coordinates)
+            self.__update_winner_text()
 
     def __get_coordinates(self):
         """Convenience method for getting the current list of coordinates."""
+
         return self.__coordinate_list[self.__current_district]
 
     def __toggle_aggregate_results(self):
@@ -188,12 +202,3 @@ class App:
         for i in range(self.__pie_chart.num_pieces):
             self.__canvas.itemconfig(self.__pie_chart.pieces[i], state=tk.HIDDEN)
             self.__ratio_labels[i].config(state=tk.DISABLED)
-
-    def __create_buttons(self):
-        self.__toggle_button = DistrictResultsToggle(self.__root, self.__canvas, self.__get_coordinates())
-        self.__next_button = create_next_button(self.__root,
-                                                self.__handle_next)
-        self.__prev_button = create_prev_button(self.__root,
-                                                self.__handle_prev)
-        self.__aggregate_button = create_aggregate_button(self.__root,
-                                                          self.__toggle_aggregate_results)

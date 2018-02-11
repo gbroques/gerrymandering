@@ -37,7 +37,6 @@ def get_district_winners(coordinates):
     :return: A dictionary where keys are districts,
              and values are parties.
     """
-
     districts = range(1, NUM_DISTRICTS + 1)
     district_winners = dict.fromkeys(districts)
     voter_map = get_voter_map()
@@ -61,7 +60,6 @@ def get_district_winners(coordinates):
 
 def from_coordinates_to_grid(coordinates):
     """Convert a list of coordinates into a grid."""
-
     grid = [[0] * NUM_DISTRICTS for _ in range(NUM_DISTRICTS)]
     district = 1
     for i in range(1, len(coordinates) + 1):

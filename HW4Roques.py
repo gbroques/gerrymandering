@@ -137,7 +137,6 @@ def print_loading_dots(i):
 
 def make_district_grid(district_grid, coordinates):
     """Mutate the redistricting scheme with a list of coordinates."""
-
     district = 1
     for i in range(1, len(coordinates) + 1):
         x = coordinates[i - 1][0]
@@ -154,7 +153,6 @@ def get_contiguous_coordinates():
     next five elements comprise district 2,
     and so on.
     """
-
     return [(0, 0), (1, 1), (1, 2), (2, 2), (3, 2),
             (0, 1), (1, 0), (2, 0), (2, 1), (3, 1),
             (3, 0), (4, 0), (4, 1), (4, 2), (3, 3),
@@ -169,13 +167,11 @@ def get_second_contiguous_coordinates():
     next five elements comprise district 2,
     and so on.
     """
-
     return list(product(range(NUM_DISTRICTS), repeat=2))
 
 
 def is_grid_contiguous(grid):
     """Check whether the grid is contiguous."""
-
     start_positions = find_start_positions(grid)
     for start_pos in start_positions.values():
         if not is_district_contiguous(grid, start_pos):
@@ -185,7 +181,6 @@ def is_grid_contiguous(grid):
 
 def is_district_contiguous(grid, start_pos):
     """Check whether the district is contiguous."""
-
     prev_positions = set()
     prev_positions.add(start_pos)
     return is_district_contiguous_helper(grid, start_pos, prev_positions, 1)
@@ -198,7 +193,6 @@ def is_district_contiguous_helper(grid, curr_pos, prev_positions, count):
       * https://github.com/a1ip/checkio-1/blob/master/the%20Moore%20neighborhood.py
       * http://www.imageprocessingplace.com/downloads_V3/root_downloads/tutorials/contour_tracing_Abeer_George_Ghuneim/moore.html
     """
-
     if count == NUM_DISTRICTS:
         return True
 
@@ -220,7 +214,6 @@ def is_district_contiguous_helper(grid, curr_pos, prev_positions, count):
 
 def is_in_bounds(grid, x, y):
     """Get whether an (x, y) coordinate is within bounds of the grid."""
-
     return (0 <= x < len(grid)) and (0 <= y < len(grid[0]))
 
 
@@ -233,7 +226,6 @@ def find_start_positions(grid):
     :return: A dictionary where the keys are districts,
              and the values are tuples representing an (x, y) coordinate.
     """
-
     districts = range(1, NUM_DISTRICTS + 1)
     start_positions = dict.fromkeys(districts)
     for i in range(len(grid)):

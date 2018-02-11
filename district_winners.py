@@ -8,7 +8,6 @@ from constants import P
 
 def get_election_winner(district_winners):
     """Get which party won the election."""
-
     num_green_votes = 0
     num_purple_votes = 0
     for winner in district_winners.values():
@@ -35,7 +34,6 @@ def get_winning_ratio(district_winners, sep=':'):
              and the number of districts purple won,
              concatenated by a separator.
     """
-
     num_green_votes = 0
     num_purple_votes = 0
     for winner in district_winners.values():

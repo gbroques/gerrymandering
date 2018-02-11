@@ -14,7 +14,6 @@ def print_statistics(text_file, num_wins, winning_ratios, num_contiguous):
       * Percentage of which ratio won each election
       * Percentage of elections each party won
     """
-
     __print_statistics_report_header(text_file)
 
     __print_winning_ratios(text_file, winning_ratios, num_contiguous)
@@ -32,7 +31,6 @@ def __get_percent_elections_won(num_wins, party, num_contiguous):
     :param num_contiguous: The number of contiguous redistrictings.
     :return: The percent of total elections won.
     """
-
     num_elections_won = num_wins[party]
     return num_elections_won / num_contiguous * 100
 
@@ -47,7 +45,6 @@ def __print_statistics_report_header(text_file):
 
 def __print_percent_won(text_file, party, percentage_won):
     """Print the percentage of elections the party won."""
-
     message = party + " won " + str(round(percentage_won, 2)) + "% percent of elections."
     print_to_screen_and_file(message, text_file)
 
