@@ -1,9 +1,12 @@
 """
 Helper functions for printing out statistics.
+TODO: Refactor into a class
 """
 
 from util import print_to_screen_and_file
 from util import get_border
+
+_REPORT_TITLE = 'STATISTICS REPORT'
 
 
 def print_statistics(text_file, num_wins, winning_ratios, num_contiguous):
@@ -37,7 +40,7 @@ def __get_percent_elections_won(num_wins, party, num_contiguous):
 
 def __print_statistics_report_header(text_file):
     """Print the header to the statistics report."""
-    report_title = 'STATISTICS REPORT'
+    report_title = _REPORT_TITLE
     print_to_screen_and_file(report_title, text_file)
     border = get_border('-', len(report_title))
     print_to_screen_and_file(border, text_file)
@@ -60,4 +63,3 @@ def __print_winning_ratios(text_file, winning_ratios, num_contiguous):
         message += str(round(percent, 2)) + "% of the time."
         print_to_screen_and_file(message, text_file)
     print_to_screen_and_file("", text_file)  # Print extra newline character
-

@@ -28,29 +28,16 @@ Description:
 import sys
 from random import shuffle
 
-from constants import G
 from constants import NUM_DISTRICTS
+from constants import NUM_ITERATIONS_TO_PRINT_DOT
 from constants import NUM_REDISTRICTING_SCHEMES
-from constants import P
 from contiguous_data import get_contiguous_coordinates
 from contiguous_data import get_second_contiguous_coordinates
-from coordinates import from_coordinates_to_grid
-from coordinates import get_district_winners
-from district_winners import get_election_winner
-from district_winners import get_winning_ratio
 from gui import App
-from statistics import print_statistics
-from util import get_border
-from util import get_voter_map
-from util import print_to_screen_and_file
-
-# Name of output file
-OUTPUT_FILE = "HW4output.txt"
+from output_printer import OutputPrinter
 
 
 def main():
-    text_file = open(OUTPUT_FILE, "w")
-
     # Initialize map of zeros
     district_grid = [[0] * NUM_DISTRICTS for _ in range(NUM_DISTRICTS)]
 
@@ -59,92 +46,31 @@ def main():
     coordinates = get_contiguous_coordinates()
 
     # Keep track of each contiguous redistricting scheme
-    contiguous_coordinates = []
+    contiguous_coordinate_list = []
 
-    # Keep track of how many contiguous redistricting schemes are generated
-    num_contiguous = 0
-
-    contiguous_coordinates.append(get_second_contiguous_coordinates())
-    num_contiguous += 1
+    contiguous_coordinate_list.append(get_second_contiguous_coordinates())
 
     for i in range(NUM_REDISTRICTING_SCHEMES):
-        # Get a random redistricting
-        make_district_grid(district_grid, coordinates)
+        redistrict_grid(district_grid, coordinates)
 
         if is_grid_contiguous(district_grid):
-            num_contiguous += 1
-            contiguous_coordinates.append(coordinates[:])
+            contiguous_coordinate_list.append(coordinates[:])
 
         shuffle(coordinates)
 
         print_loading_dots(i)
 
-    print('\n')
-
-    message = 'We generated ' + str(num_contiguous) + ' contiguous random redistricting schemes.\n'
-    print_to_screen_and_file(message, text_file)
-
-    # Keep track of how many times each party wins an election.
-    num_wins = {
-        G: 0,
-        P: 0
-    }
-
-    winning_ratios = get_winning_ratios()
-
-    for contiguous_coordinate in contiguous_coordinates:
-        grid = from_coordinates_to_grid(contiguous_coordinate)
-        print_district_map(text_file, grid)
-
-        district_winners = get_district_winners(contiguous_coordinate)
-        election_winner = get_election_winner(district_winners)
-        winning_ratio = get_winning_ratio(district_winners)
-        winning_ratios[winning_ratio] += 1
-        num_wins[election_winner] += 1
-
-    print_legend(text_file)
-
-    print_statistics(text_file, num_wins, winning_ratios, num_contiguous)
-
-    print_output_file_generated_message()
-
-    text_file.close()
+    # TODO: Give output printer a more descriptive name
+    output_printer = OutputPrinter(contiguous_coordinate_list)
+    output_printer.print_output()
 
     # Run GUI application
-    gui = App(contiguous_coordinates, winning_ratios)
+    gui = App(contiguous_coordinate_list, output_printer.winning_ratios)
     gui.run_mainloop()
 
 
-def get_winning_ratios():
-    """Get a dictionary to keep track which ratio wins each election.
-
-    Key: 'num_green_wins:num_purple_wins'
-    :return: Winning ratios dictionary.
-    """
-    return {
-        '2:3': 0,
-        '3:2': 0,
-        '4:1': 0,
-        '5:0': 0
-    }
-
-
-def print_loading_dots(i):
-    """Print dots to indicate loading to the user.
-
-    Prints one dot every 2 million iterations.
-    Prints 50 dots for 100 million iterations.
-
-    :param i: Number of iterations.
-    :return: void
-    """
-    if i % 2000000 == 0:
-        print('.', end='')
-        sys.stdout.flush()
-
-
-def make_district_grid(district_grid, coordinates):
-    """Mutate the redistricting scheme with a list of coordinates."""
+def redistrict_grid(district_grid, coordinates):
+    """Redistrict grid with a list of coordinates."""
     district = 1
     for i in range(1, len(coordinates) + 1):
         x = coordinates[i - 1][0]
@@ -222,29 +148,17 @@ def find_start_positions(grid):
     return start_positions
 
 
-def print_district_map(text_file, district_map):
-    voter_map = get_voter_map()
-    border_length = 20
-    border = get_border('═', border_length)
-    print_to_screen_and_file('╔' + border + '╗', text_file)
-    for i in range(len(district_map)):
-        print_to_screen_and_file('║', text_file, end='')
-        for j in range(len(district_map[i])):
-            party = voter_map[i][j]
-            display_str = str(district_map[i][j]) + party[0]
-            print_to_screen_and_file(' ' + display_str + ' ', text_file, end='')
-        print_to_screen_and_file('║', text_file)
-    print_to_screen_and_file('╚' + border + '╝\n', text_file)
+def print_loading_dots(i):
+    """Print dots to indicate loading to the user.
 
-
-def print_legend(text_file):
-    print_to_screen_and_file('LEGEND', text_file)
-    print_to_screen_and_file('  G - Green', text_file)
-    print_to_screen_and_file('  P - Purple\n', text_file)
-
-
-def print_output_file_generated_message():
-    print("\nStatistics report generated. See file '" + OUTPUT_FILE + "'.")
+    :param i: Number of iterations.
+    :return: void
+    """
+    if i % NUM_ITERATIONS_TO_PRINT_DOT == 0:
+        print('.', end='')
+        sys.stdout.flush()
+    elif i == NUM_REDISTRICTING_SCHEMES - 1:
+        print('\n')
 
 
 if __name__ == '__main__':
