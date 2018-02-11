@@ -1,4 +1,5 @@
 from gui.colors import get_pie_chart_piece_color
+from tkinter import HIDDEN
 
 _CIRCUMFERENCE = 1000
 
@@ -26,7 +27,8 @@ class PieChart:
             'fill': color,
             'outline': color,
             'start': cls.__proportion(start),
-            'extent': cls.__proportion(extent)
+            'extent': cls.__proportion(extent),
+            'state': HIDDEN  # Hide pie chart by default
         }
 
     @staticmethod
