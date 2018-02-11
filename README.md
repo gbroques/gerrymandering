@@ -12,4 +12,8 @@ When you break a set into subsets, in our case, 25 voters into 5 districts, it i
 
 How the districts are formed can make a dramatic difference in the outcome of elections.
 
-This program generates 1 million random redistricting schemes. Contiguous redstricting schemes are recorded, and statistics of interest are displayed to the terminal and a textfile `HW3output.txt`.
+This program generates 1 million random redistricting schemes. Contiguous redistricting schemes are recorded, and statistics of interest are displayed to the terminal and a textfile `HW4output.txt`.
+
+## How to Run
+`python HW4Roques.py`
+Be sure to run it with Python 3.
