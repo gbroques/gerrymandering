@@ -17,3 +17,5 @@ This program generates 1 million random redistricting schemes. Contiguous redist
 ## How to Run
 `python HW4Roques.py`
 Be sure to run it with Python 3.
+
+Toggle the number of iterations by changing `NUM_REDISTRICTING_SCHEMES` in `constants.py`. Defaults to 1 million iterations.

@@ -3,7 +3,7 @@ Global constants for the project.
 """
 
 # Total number of redistricting schemes
-NUM_REDISTRICTING_SCHEMES = 1000  # 100 million
+NUM_REDISTRICTING_SCHEMES = 1000000  # 1 million
 
 # Number of iterations to print a loading dot
 NUM_ITERATIONS_TO_PRINT_DOT = 2000000

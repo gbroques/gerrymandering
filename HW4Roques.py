@@ -48,6 +48,8 @@ def main():
     # Keep track of each contiguous redistricting scheme
     contiguous_coordinate_list = []
 
+    # Add another set of contiguous coordinates to list,
+    # so that you don't have to wait so long to see results.
     contiguous_coordinate_list.append(get_second_contiguous_coordinates())
 
     for i in range(NUM_REDISTRICTING_SCHEMES):
